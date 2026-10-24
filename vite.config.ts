@@ -13,6 +13,8 @@ export default defineConfig({
   build: {
     outDir: 'docs',
     emptyOutDir: true,
-    rollupOptions: { input: { main: resolve('index.html'), syntax: resolve('syntax/index.html') } }
+    rollupOptions: {
+      input: { main: resolve('index.html'), syntax: resolve('syntax/index.html'), customize: resolve('customize/index.html') }
+    }
   }
 })

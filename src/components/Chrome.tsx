@@ -15,7 +15,11 @@ export function GitHubMark({ className }: { className?: string }) {
 
 /** The page's language, remembered between visits and shared by every page of the site. */
 export function useLang(): [Lang, (lang: Lang) => void] {
-  const [lang, setLang] = useState<Lang>(initialLang)
+  // The first render is always the default language, the one the pages are prerendered in, so hydration matches.
+  const [lang, setLang] = useState<Lang>('zh-TW')
+  useEffect(() => {
+    setLang(initialLang())
+  }, [])
   useEffect(() => {
     document.documentElement.lang = lang
     try {
@@ -32,7 +36,7 @@ interface HeaderProps {
   onLang: (lang: Lang) => void
   /** Where the site root is from this page: '' on the home page, '../' one folder down. */
   root: string
-  current: 'home' | 'syntax'
+  current: 'home' | 'syntax' | 'customize'
 }
 
 export function SiteHeader({ lang, onLang, root, current }: HeaderProps) {
@@ -55,6 +59,13 @@ export function SiteHeader({ lang, onLang, root, current }: HeaderProps) {
             className={cn(link, current === 'syntax' ? 'font-medium text-foreground' : 'text-muted-foreground')}
           >
             {s.nav.syntax}
+          </a>
+          <a
+            href={`${root}customize/`}
+            aria-current={current === 'customize' ? 'page' : undefined}
+            className={cn(link, current === 'customize' ? 'font-medium text-foreground' : 'text-muted-foreground')}
+          >
+            {s.nav.customize}
           </a>
           <a href={`${root}#download`} className={cn(link, 'text-muted-foreground')}>
             {s.nav.download}
@@ -87,6 +98,9 @@ export function SiteFooter({ lang, root }: { lang: Lang; root: string }) {
         <div className="flex items-center gap-4">
           <a href={`${root}syntax/`} className="hover:text-foreground">
             {s.nav.syntax}
+          </a>
+          <a href={`${root}customize/`} className="hover:text-foreground">
+            {s.nav.customize}
           </a>
           <a href={REPO_URL} target="_blank" rel="noreferrer" className="hover:text-foreground">
             GitHub

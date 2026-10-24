@@ -25,7 +25,8 @@
       "Custom syntax always looks the same: a block opens with `:::name` and closes with `:::`, and a one-line form is written `::name`.",
       "Most of it can be inserted with a button on the toolbar.",
       "Mermaid, LaTeX, charts and to-do lists are built-in plugins you can switch off in Settings → Plugins. Callouts and page breaks are core and always on.",
-      "A mistake never breaks the document: the preview shows the error in place."
+      "A mistake never breaks the document: the preview shows the error in place.",
+      "To restyle charts and diagrams, add your own syntax, or write a theme, see the Customize page."
      ]
     }
    ]

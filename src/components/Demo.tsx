@@ -69,8 +69,10 @@ function Todo({ label, done }: { label: string; done?: boolean }) {
 /** A looping animation of typing Markdown on the left and the rendered page growing on the right. */
 export default function Demo({ lang }: { lang: Lang }): React.JSX.Element {
   const script = steps(lang)
-  const reduced = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const [line, setLine] = useState(reduced ? script.length : 0)
+  // Read after mount so the prerendered markup and the first client render agree.
+  const [reduced, setReduced] = useState(false)
+  useEffect(() => setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches), [])
+  const [line, setLine] = useState(0)
   const [chars, setChars] = useState(0)
 
   // The script is rebuilt when the language changes, so start over.

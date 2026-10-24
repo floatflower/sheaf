@@ -6,7 +6,7 @@
   "description": "Product page for Sheaf, published with GitHub Pages from the docs/ folder of this branch.",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --noEmit && vite build",
+    "build": "tsc --noEmit && vite build && vite build --ssr src/entry-server.tsx --outDir .ssr && node scripts/prerender.mjs",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit"
   },

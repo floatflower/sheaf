@@ -1,7 +1,7 @@
 export type Lang = 'zh-TW' | 'en'
 
 export interface Strings {
-  nav: { features: string; syntax: string; download: string; github: string }
+  nav: { features: string; syntax: string; customize: string; download: string; github: string }
   hero: {
     badge: string
     title: string
@@ -42,7 +42,7 @@ export interface Strings {
 }
 
 const zh: Strings = {
-  nav: { features: '功能', syntax: '語法說明', download: '下載', github: 'GitHub' },
+  nav: { features: '功能', syntax: '語法說明', customize: '自訂', download: '下載', github: 'GitHub' },
   hero: {
     badge: '免費 · 開源',
     title: '好寫、好擴充的 Markdown 編輯器',
@@ -103,7 +103,7 @@ const zh: Strings = {
 }
 
 const en: Strings = {
-  nav: { features: 'Features', syntax: 'Syntax guide', download: 'Download', github: 'GitHub' },
+  nav: { features: 'Features', syntax: 'Syntax guide', customize: 'Customize', download: 'Download', github: 'GitHub' },
   hero: {
     badge: 'Free · Open source',
     title: 'A Markdown editor that is easy to write in, and to extend',
@@ -167,6 +167,7 @@ const en: Strings = {
 export const STRINGS: Record<Lang, Strings> = { 'zh-TW': zh, en }
 
 export function initialLang(): Lang {
+  if (typeof window === 'undefined') return 'zh-TW'
   try {
     const saved = localStorage.getItem('sheaf.site.lang')
     if (saved === 'zh-TW' || saved === 'en') return saved

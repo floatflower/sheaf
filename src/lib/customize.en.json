@@ -1,0 +1,405 @@
+{
+ "ui": {
+  "title": "Customize",
+  "subtitle": "Change how documents look with a theme, or add new syntax and behavior with a plugin. Both are single files you drop into a folder; no build step and no restart. Every example on this page was loaded into the app to draw the screenshot next to it.",
+  "toc": "On this page",
+  "result": "Rendered result",
+  "copy": "Copy",
+  "copied": "Copied",
+  "back": "Back to home"
+ },
+ "sections": [
+  {
+   "id": "overview",
+   "title": "Where the files go",
+   "blocks": [
+    {
+     "t": "p",
+     "text": "There are two kinds of extension, and each has its own folder:"
+    },
+    {
+     "t": "ul",
+     "items": [
+      "**Theme**: a `.css` file in the themes folder. It styles the preview, HTML export and PDF.",
+      "**Plugin**: a `.js` file in the plugins folder. It adds syntax, rewrites the rendered page, or draws things into it."
+     ]
+    },
+    {
+     "t": "p",
+     "text": "The quickest way there is **Settings → Appearance → Open themes folder** (or **Settings → Plugins → Open plugins folder**). After you add or change a file, press **Reload** in the same tab. The app does not need to restart."
+    },
+    {
+     "t": "table",
+     "head": [
+      "System",
+      "Folder"
+     ],
+     "rows": [
+      [
+       "macOS",
+       "`~/Library/Application Support/Sheaf/themes` and `…/plugins`"
+      ],
+      [
+       "Windows",
+       "`%APPDATA%\\Sheaf\\themes` and `…\\plugins`"
+      ],
+      [
+       "Linux",
+       "`~/.config/Sheaf/themes` and `…/plugins`"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "id": "theme",
+   "title": "Custom themes",
+   "blocks": [
+    {
+     "t": "p",
+     "text": "A theme is one CSS file. Its name, without `.css`, is what you pick in Settings → Appearance. Everything is scoped to `.markdown-body`, the element that holds the rendered page."
+    },
+    {
+     "t": "h",
+     "text": "Start from a complete file"
+    },
+    {
+     "t": "p",
+     "text": "A custom theme replaces the built-in look rather than sitting on top of Default, so a file that only styles headings leaves everything else unstyled. The structural rules (spacing, list markers, full-width tables, page breaks) always apply. Colors, fonts, borders and backgrounds come from your theme. The simplest start is to copy the example below and change what you like."
+    },
+    {
+     "t": "code",
+     "file": "rose.css",
+     "label": "rose.css"
+    },
+    {
+     "t": "image",
+     "src": "customize-theme.png",
+     "alt": "A document drawn with the rose theme: a dark red heading, pink table borders, and a chart and diagram in the same colors"
+    },
+    {
+     "t": "h",
+     "text": "What you can style"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Selector",
+      "What it is"
+     ],
+     "rows": [
+      [
+       "`.markdown-body`",
+       "The page itself: text color, background, font, and the custom properties below"
+      ],
+      [
+       "`h1` … `h6`, `p`, `a`, `blockquote`, `hr`",
+       "Ordinary elements inside `.markdown-body`"
+      ],
+      [
+       "`code:not(pre code)`",
+       "Inline code, as opposed to code blocks"
+      ],
+      [
+       "`pre`",
+       "Code blocks. Token colors are covered below"
+      ],
+      [
+       "`table`, `th`, `td`, `tr`",
+       "Tables. Use `tbody tr:nth-child(even)` for zebra stripes"
+      ],
+      [
+       "`.callout`, `.callout-note`, `.callout-warning`",
+       "`:::note` and `:::warning` blocks. The heading text is in the `data-title` attribute, drawn by `::before`"
+      ],
+      [
+       "`figure`, `figcaption`",
+       "Images that have a caption. `figcaption { display: none }` turns captions off"
+      ],
+      [
+       "`li.task-list-item`, `.todo-box`",
+       "To-do checkboxes in lists, and the standalone ones"
+      ],
+      [
+       "`.mermaid-block`, `.chart-block`",
+       "Containers for diagrams and charts. Use them for spacing, not colors (see the next two sections)"
+      ]
+     ]
+    },
+    {
+     "t": "p",
+     "text": "A rule works the same in the preview, in HTML export and in PDF. Put print-only changes in `@media print { … }`."
+    },
+    {
+     "t": "h",
+     "text": "Code block colors"
+    },
+    {
+     "t": "p",
+     "text": "Code blocks are highlighted with Shiki, which writes two sets of colors onto every token as CSS variables, `--shiki-light` and `--shiki-dark`, plus `--shiki-light-bg` and `--shiki-dark-bg` for the block. The light set is used unless you say otherwise. A theme with a dark page can switch to the dark set:"
+    },
+    {
+     "t": "code",
+     "code": ".markdown-body .shiki,\n.markdown-body .shiki span { color: var(--shiki-dark); }\n.markdown-body pre.shiki { background: var(--shiki-dark-bg); }",
+     "label": "CSS"
+    },
+    {
+     "t": "h",
+     "text": "Fonts"
+    },
+    {
+     "t": "p",
+     "text": "Noto Sans and Noto Serif, with their Traditional Chinese, Simplified Chinese, Japanese and Korean variants, ship with the app. `font-family: 'Noto Serif', 'Noto Serif TC', Georgia, serif` therefore looks the same on every computer. Any other font has to be installed on the computer that reads the document and is not embedded in an export."
+    },
+    {
+     "t": "p",
+     "text": "Chinese, Japanese and Korean share many characters, and the first font in the list that has a character draws it. List the language you write in first (`TC`, then `SC`, then `JP`, then `KR`)."
+    }
+   ]
+  },
+  {
+   "id": "theme-chart",
+   "title": "Styling charts",
+   "blocks": [
+    {
+     "t": "p",
+     "text": "Charts are drawn into images while the document renders, so CSS rules cannot reach inside them. Instead a theme sets custom properties on `.markdown-body`, and the chart reads them when it is drawn."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Property",
+      "Meaning"
+     ],
+     "rows": [
+      [
+       "`--chart-1` … `--chart-8`",
+       "Colors of the series (or slices), in order. Defaults: `#4e79a7`, `#f28e2b`, `#59a14f`, `#e15759`, `#b07aa1`, `#9c755f`, `#76b7b2`, `#bab0ac`. With more series than colors they repeat"
+      ],
+      [
+       "`--chart-text`",
+       "Titles, axis labels and legend. Defaults to the page's text color"
+      ],
+      [
+       "`--chart-grid`",
+       "Grid lines and borders. Default `rgba(128, 128, 128, 0.3)`"
+      ],
+      [
+       "`--chart-font`",
+       "Font family of the chart text. Defaults to the page's font"
+      ]
+     ]
+    },
+    {
+     "t": "code",
+     "code": ".markdown-body {\n  --chart-1: #e11d48;\n  --chart-2: #f59e0b;\n  --chart-3: #0d9488;\n  --chart-text: #3b2f2f;\n  --chart-grid: #fecdd3;\n}",
+     "label": "CSS"
+    },
+    {
+     "t": "h",
+     "text": "Overriding one chart"
+    },
+    {
+     "t": "p",
+     "text": "Form B (a `chart` code block) takes a full Chart.js configuration, so anything Chart.js supports is available for a single chart. A dataset that sets its own `backgroundColor` or `borderColor` keeps it; the theme only colors datasets that have none."
+    },
+    {
+     "t": "code",
+     "file": "chart-override.md",
+     "label": "chart-override.md"
+    },
+    {
+     "t": "p",
+     "text": "The configuration is YAML or JSON, so it cannot contain functions."
+    }
+   ]
+  },
+  {
+   "id": "theme-mermaid",
+   "title": "Styling Mermaid",
+   "blocks": [
+    {
+     "t": "p",
+     "text": "Diagrams use the same idea: `--mermaid-*` custom properties are passed to Mermaid as its theme variables. Setting any one of them switches Mermaid to its customizable `base` theme, and every variable you leave out is worked out from the ones you set. Set none and diagrams keep Mermaid's stock look."
+    },
+    {
+     "t": "table",
+     "head": [
+      "Property",
+      "Meaning"
+     ],
+     "rows": [
+      [
+       "`--mermaid-primary`, `-primary-text`, `-primary-border`",
+       "Fill, text and border of the main nodes. Start here"
+      ],
+      [
+       "`--mermaid-secondary…`, `--mermaid-tertiary…`",
+       "Second and third color families (each with `-text` and `-border`), used by other diagram types and by nested parts"
+      ],
+      [
+       "`--mermaid-line`",
+       "Arrows and lines"
+      ],
+      [
+       "`--mermaid-text`",
+       "General text color"
+      ],
+      [
+       "`--mermaid-background`",
+       "Background of the diagram"
+      ],
+      [
+       "`--mermaid-font`",
+       "Font family"
+      ],
+      [
+       "`--mermaid-node-border`",
+       "Border of nodes"
+      ],
+      [
+       "`--mermaid-cluster-background`, `-cluster-border`",
+       "Subgraph boxes"
+      ],
+      [
+       "`--mermaid-note-background`, `-note-text`, `-note-border`",
+       "Notes in sequence diagrams"
+      ],
+      [
+       "`--mermaid-edge-label-background`",
+       "Background behind the labels on arrows"
+      ],
+      [
+       "`--mermaid-dark`",
+       "Write `true` for a diagram palette meant for a dark page"
+      ]
+     ]
+    },
+    {
+     "t": "p",
+     "text": "Write colors as hex codes such as `#ffe4e6`, because Mermaid computes the shades it needs from them."
+    },
+    {
+     "t": "code",
+     "code": ".markdown-body {\n  --mermaid-primary: #ffe4e6;\n  --mermaid-primary-text: #3b2f2f;\n  --mermaid-primary-border: #e11d48;\n  --mermaid-line: #9f1239;\n}",
+     "label": "CSS"
+    }
+   ]
+  },
+  {
+   "id": "plugin",
+   "title": "Custom plugins",
+   "blocks": [
+    {
+     "t": "p",
+     "text": "A plugin is one `.js` file in the plugins folder. It is an ES module whose **default export** is an object. Settings → Plugins lists every file with a switch (a switched-off plugin is never loaded) and shows the error if one fails to load."
+    },
+    {
+     "t": "h",
+     "text": "What goes in the object"
+    },
+    {
+     "t": "table",
+     "head": [
+      "Field",
+      "What it does"
+     ],
+     "rows": [
+      [
+       "`name`",
+       "The name shown in the list. Defaults to the file name"
+      ],
+      [
+       "`directives`",
+       "Gives `:::name{attr=value}` and `::name` syntax an HTML element. Each entry is a function that receives `{ name, kind, attributes }` (`kind` is `text`, `leaf` or `container`) and returns `{ tagName, properties }`. What is written inside the block renders inside that element"
+      ],
+      [
+       "`remarkPlugins`",
+       "Plugins for the Markdown syntax tree, in unified's format: a function, or `[function, options]`"
+      ],
+      [
+       "`rehypePluginsBeforeHighlight`",
+       "Plugins for the HTML tree that run before code is highlighted. Use this to take over code blocks of your own language, as the built-in Mermaid and chart plugins do"
+      ],
+      [
+       "`rehypePlugins`",
+       "Plugins for the HTML tree that run after highlighting"
+      ],
+      [
+       "`css`",
+       "A string, or a function of the rendered HTML that returns one, so the styles can be left out when unused. It comes before the theme's CSS, so a theme can override it"
+      ],
+      [
+       "`postRender`",
+       "`(root, { themeCss }) => void | Promise` runs on the rendered page in the preview, in HTML export and in PDF. Use it to draw things into placeholders or adjust the DOM"
+      ],
+      [
+       "`docs`",
+       "Markdown that explains your syntax. It is added to the syntax guide an AI assistant receives over MCP, so the assistant knows how to write it"
+      ]
+     ]
+    },
+    {
+     "t": "h",
+     "text": "Example 1: new syntax"
+    },
+    {
+     "t": "p",
+     "text": "This plugin adds `:::tip{title=\"…\"}`. In `properties`, use HTML property names: `className`, and `dataTitle`, which becomes the attribute `data-title`."
+    },
+    {
+     "t": "code",
+     "file": "tip.js",
+     "label": "tip.js"
+    },
+    {
+     "t": "h",
+     "text": "Example 2: rewrite the HTML"
+    },
+    {
+     "t": "p",
+     "text": "A rehype plugin is a function that returns a function, which receives the tree and changes it. Plugins are loaded as stand-alone modules, so `import` of package names or other files does not work, and the tree is walked by hand. That takes about ten lines."
+    },
+    {
+     "t": "code",
+     "file": "external-links.js",
+     "label": "external-links.js"
+    },
+    {
+     "t": "h",
+     "text": "Example 3: after the page is drawn"
+    },
+    {
+     "t": "p",
+     "text": "`postRender` gets the rendered element and can do anything DOM code can. This one adds a reading time at the top, in the preview and in exports."
+    },
+    {
+     "t": "code",
+     "file": "reading-time.js",
+     "label": "reading-time.js"
+    },
+    {
+     "t": "image",
+     "src": "customize-plugins.png",
+     "alt": "A document with three plugins at work: a reading time at the top, an arrow after the external link, and a green tip box"
+    },
+    {
+     "t": "h",
+     "text": "Installing and removing"
+    },
+    {
+     "t": "ul",
+     "items": [
+      "Put the file in the plugins folder and press **Reload** in Settings → Plugins.",
+      "If it fails to load, the reason appears under its name. Common causes are a syntax error or a missing `export default`.",
+      "To stop using one, switch it off in the list or delete the file."
+     ]
+    },
+    {
+     "t": "p",
+     "text": "**Only install plugins you trust.** A plugin runs with the same abilities as the editor's own page, including reading and saving files through the app."
+    }
+   ]
+  }
+ ]
+}

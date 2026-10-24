@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Check, Copy } from 'lucide-react'
 
-export default function CodeBlock({ code, copy, copied }: { code: string; copy: string; copied: string }) {
+export default function CodeBlock({ code, copy, copied, label }: { code: string; copy: string; copied: string; label?: string }) {
   const [done, setDone] = useState(false)
   async function onCopy(): Promise<void> {
     try {
@@ -22,6 +22,7 @@ export default function CodeBlock({ code, copy, copied }: { code: string; copy: 
         {done ? <Check className="size-3.5" /> : <Copy className="size-3.5" />}
         {done ? copied : copy}
       </button>
+      {label && <div className="border-b bg-muted/60 px-4 py-2 font-mono text-xs text-muted-foreground">{label}</div>}
       <pre className="m-0 overflow-x-auto p-4 font-mono text-[13px] leading-6">
         <code>{code.replace(/\n$/, '')}</code>
       </pre>

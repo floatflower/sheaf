@@ -1,0 +1,58 @@
+import{_ as e,f as t,v as n,y as r}from"./Chrome-BIGD9lkX.js";import{t as i}from"./DocPage-BkO-nDXv.js";var a=r(n(),1),o=e(),s={ui:{title:`語法說明`,subtitle:`Sheaf 使用標準 Markdown，再加上幾個自訂語法。下面每個範例都附上程式碼，以及 app 實際渲染出來的樣子。`,toc:`本頁內容`,result:`渲染結果`,copy:`複製`,copied:`已複製`,back:`回到首頁`,pageBreakLabel:`::pagebreak`,pageOne:`第一頁`,pageTwo:`第二頁`,onScreen:`螢幕上看不到`,onPaper:`列印時從這裡換頁`},sections:[{id:`basics`,title:`開始之前`,blocks:[{t:`ul`,items:[`標準語法：CommonMark 加上 GFM（表格、刪除線、待辦清單）。程式碼區塊標上語言就會自動語法上色。`,"自訂語法有固定的長相：區塊寫成 `:::名稱` 開頭、`:::` 結尾，單行的寫成 `::名稱`。",`工具列的按鈕可以一鍵插入大部分語法。`,`Mermaid、LaTeX、圖表和待辦清單是內建插件，可以在「設定 → 插件」關掉；提示框和強制換頁是核心功能，一定可用。`,`寫錯不會弄壞文件，預覽會在原地顯示錯誤訊息。`,`想調整圖表與流程圖的樣式、加入自己的語法，或是撰寫主題，請看「自訂」頁面。`]}]},{id:`chart`,title:`資料圖表`,blocks:[{t:`p`,text:`有兩種寫法。寫法 A 把一張 Markdown 表格當資料，日常用最方便；寫法 B 直接寫 Chart.js 的設定，需要細部控制時用。`},{t:`h`,text:`寫法 A：用表格`},{t:`p`,text:"用 `:::chart{…}` 包住一張表格，結尾用 `:::`。第一欄是標籤，其餘每一欄是一組資料。"},{t:`example`,example:`chart-table`,alt:`用表格寫成的長條圖，有 2025 與 2026 兩組資料`,result:!0},{t:`p`,text:`可用的屬性：`},{t:`table`,head:[`屬性`,`說明`],rows:[["`type`","圖表種類：`bar`、`line`、`area`、`pie`、`doughnut`、`radar`、`scatter`，預設 `bar`"],["`title`",`圖表標題`],["`stacked`","堆疊，只適用 `bar` 和 `line`。直接寫成 `{type=bar stacked}`"],["`height`",`高度，單位是像素`],["`legend`","寫 `legend=false` 可隱藏圖例。有多組資料或是圓餅圖時，預設會顯示圖例"]]},{t:`p`,text:"`scatter` 的第一欄要是 x 軸的數值。"},{t:`h`,text:`寫法 B：Chart.js 設定`},{t:`p`,text:"語言標記為 `chart` 的程式碼區塊，內容是 Chart.js 的設定，可以寫 YAML 或 JSON。至少要有 `type` 和 `data`，也可以加 `width`、`height`（像素）。"},{t:`example`,example:`chart-config`,alt:`用 Chart.js 設定畫成的折線圖，有 Sales 與 Costs 兩條線`,result:!0},{t:`ul`,items:[`YAML 裡不能寫函式（例如 tooltip 的 callback）。`,"沒有指定顏色的資料組，會自動套用主題的配色。主題可以用 `--chart-1` 到 `--chart-8` 這些 CSS 變數調整。",`設定有誤時，圖表的位置會顯示紅色的錯誤訊息。`]}]},{id:`todo`,title:`待辦清單`,blocks:[{t:`p`,text:"用 `[ ]` 代表未完成、`[x]` 代表已完成，大小寫都可以。有三種放法：單獨成行、放在清單裡（可以巢狀）、放在表格的儲存格裡。"},{t:`example`,example:`todo`,alt:`三種待辦清單的寫法：單獨成行、巢狀清單、表格儲存格`,result:!0},{t:`ul`,items:["單獨成行和表格裡的寫法，方括號後面要空一格；儲存格裡只有 `[x]` 時不用。","放在清單裡就是標準的 `- [x]` 寫法（Markdown 本身的功能），所以就算關掉待辦清單插件，它也一樣能用。","只有出現在一行最前面才會轉換。句子中間的 `[x]`，以及行內程式碼裡的，都維持原樣。",`預覽和匯出裡的勾選框是唯讀的，要改狀態請修改原文。`]}]},{id:`mermaid`,title:`Mermaid 流程圖`,blocks:[{t:`p`,text:"用語言標記為 `mermaid` 的程式碼區塊寫圖表。流程圖、時序圖、甘特圖等 Mermaid 支援的圖種都可以。"},{t:`example`,example:`mermaid`,alt:`由 Mermaid 程式碼畫出的流程圖`,result:!0},{t:`ul`,items:["外觀可以用主題的 CSS 變數調整，變數名稱以 `--mermaid-` 開頭，例如 `--mermaid-line`、`--mermaid-font`。",`語法錯誤時，預覽會顯示紅色的錯誤訊息。`]}]},{id:`math`,title:`LaTeX 數學公式`,blocks:[{t:`p`,text:"行內公式用單個 `$` 包住，獨立一行的公式用上下兩行 `$$` 夾住。使用 KaTeX 語法。"},{t:`example`,example:`math`,alt:`行內公式與獨立一行的積分公式`,result:!0},{t:`ul`,items:["要顯示真正的美元符號請寫 `\\$`（例如 `\\$5`），否則兩個 `$` 之間的內容會被當成公式。","程式碼區塊和行內程式碼裡的 `$` 不受影響。",`公式寫錯時，會以紅字顯示。`]}]},{id:`callout`,title:`提示框`,blocks:[{t:`p`,text:"用 `:::note` 或 `:::warning` 包住內容，結尾用 `:::`。裡面可以放任何 Markdown。"},{t:`example`,example:`callout`,alt:`一個 note 提示框與一個帶自訂標題的 warning 提示框`,result:!0},{t:`ul`,items:['用 `{title="…"}` 可以改標題，預設標題是 note 或 warning。',"**外層區塊的冒號數量要比裡面任何區塊多**，否則內層的結尾 `:::` 會把外層一起關掉。例如在提示框裡放圖表，外層就寫 `::::note`，結尾也用 `::::`。",`名稱不認得的區塊會當成普通區塊顯示，不會報錯。`]}]},{id:`pagebreak`,title:`強制換頁`,blocks:[{t:`p`,text:"單獨一行寫 `::pagebreak`，列印或匯出 PDF 時，它後面的內容會從新的一頁開始。"},{t:`example`,example:`pagebreak`,alt:null,result:!1},{t:`pagebreak`},{t:`ul`,items:[`它必須單獨佔一行。`,`在網頁預覽和螢幕上看不到它，只有列印時才會換頁。`,`匯出的 HTML 用瀏覽器列印時也一樣會換頁。`]}]},{id:`caption`,title:`圖片說明`,blocks:[{t:`p`,text:`單獨成一行的圖片，如果有說明文字，說明會顯示在圖片下方當作圖說。`},{t:`example`,example:`caption`,alt:null,result:!1},{t:`ul`,items:[`夾在句子中間的圖片，或沒有說明文字的圖片，不會有圖說。`,"不想顯示圖說的話，在主題的 CSS 加上 `figcaption { display: none }` 就好。",`用工具列的圖片按鈕可以一次拖進多張圖片；說明文字預設是空的，需要圖說再自己填。`]}]}]},c={ui:{title:`Syntax guide`,subtitle:`Sheaf uses standard Markdown plus a few custom pieces of syntax. Every example below comes with its code and with what the app actually renders from it.`,toc:`On this page`,result:`Rendered result`,copy:`Copy`,copied:`Copied`,back:`Back to home`,pageBreakLabel:`::pagebreak`,pageOne:`Page 1`,pageTwo:`Page 2`,onScreen:`Not visible on screen`,onPaper:`Printing starts a new page here`},sections:[{id:`basics`,title:`Before you start`,blocks:[{t:`ul`,items:[`Standard syntax: CommonMark plus GFM (tables, strikethrough, task lists). Code blocks are highlighted when you name the language.`,"Custom syntax always looks the same: a block opens with `:::name` and closes with `:::`, and a one-line form is written `::name`.",`Most of it can be inserted with a button on the toolbar.`,`Mermaid, LaTeX, charts and to-do lists are built-in plugins you can switch off in Settings → Plugins. Callouts and page breaks are core and always on.`,`A mistake never breaks the document: the preview shows the error in place.`,`To restyle charts and diagrams, add your own syntax, or write a theme, see the Customize page.`]}]},{id:`chart`,title:`Charts`,blocks:[{t:`p`,text:`There are two ways to write one. Form A uses a Markdown table as the data and is the everyday choice. Form B is a Chart.js configuration, for when you need fine control.`},{t:`h`,text:`Form A: from a table`},{t:`p`,text:"Wrap a table in `:::chart{…}` and close it with `:::`. The first column is the label and every other column is a data series."},{t:`example`,example:`chart-table`,alt:`A bar chart made from a table, with two series for 2025 and 2026`,result:!0},{t:`p`,text:`Attributes:`},{t:`table`,head:[`Attribute`,`Meaning`],rows:[["`type`","Kind of chart: `bar`, `line`, `area`, `pie`, `doughnut`, `radar` or `scatter`. Defaults to `bar`"],["`title`",`The chart's title`],["`stacked`","Stack the series. Only for `bar` and `line`. Write it as `{type=bar stacked}`"],["`height`",`Height in pixels`],["`legend`","Write `legend=false` to hide the legend. It shows by default when there are several series, or for pie charts"]]},{t:`p`,text:"For `scatter`, the first column must be the numeric x value."},{t:`h`,text:`Form B: Chart.js configuration`},{t:`p`,text:"A code block whose language is `chart`, holding a Chart.js configuration in YAML or JSON. It needs `type` and `data`, and may add `width` and `height` in pixels."},{t:`example`,example:`chart-config`,alt:`A line chart drawn from a Chart.js configuration, with Sales and Costs lines`,result:!0},{t:`ul`,items:[`YAML cannot hold functions, such as a tooltip callback.`,"Series without a colour get the theme's palette. A theme can change it with the CSS variables `--chart-1` to `--chart-8`.",`A bad configuration shows a red error where the chart would be.`]}]},{id:`todo`,title:`To-do lists`,blocks:[{t:`p`,text:"Write `[ ]` for open and `[x]` for done; capital `X` works too. There are three places to put one: on a line of its own, in a list (which can be nested), and in a table cell."},{t:`example`,example:`todo`,alt:`The three ways to write to-dos: standalone lines, a nested list and table cells`,result:!0},{t:`ul`,items:["Standalone lines and table cells need a space after the bracket; a cell holding only `[x]` does not.","In a list it is the standard `- [x]` form (a Markdown feature of its own), so it keeps working even when the to-do plugin is off.","Only a mark at the very start of a line is converted. A `[x]` in the middle of a sentence, or inside inline code, is left alone.",`The checkboxes in the preview and in exports are read-only. To change one, edit the text.`]}]},{id:`mermaid`,title:`Mermaid diagrams`,blocks:[{t:`p`,text:"Write a diagram in a code block whose language is `mermaid`. Flowcharts, sequence diagrams, Gantt charts and every other kind Mermaid supports work."},{t:`example`,example:`mermaid`,alt:`A flowchart drawn from Mermaid code`,result:!0},{t:`ul`,items:["A theme can restyle diagrams with CSS variables that start with `--mermaid-`, such as `--mermaid-line` and `--mermaid-font`.",`A syntax error shows as a red message in the preview.`]}]},{id:`math`,title:`LaTeX math`,blocks:[{t:`p`,text:"Wrap an inline formula in a single `$`, and put a display formula between two lines of `$$`. It uses KaTeX syntax."},{t:`example`,example:`math`,alt:`An inline formula and an integral on its own line`,result:!0},{t:`ul`,items:["To show a literal dollar sign write `\\$` (for example `\\$5`); otherwise whatever lies between two `$` is read as a formula.","A `$` inside a code block or inline code is left alone.",`A formula with a mistake is shown in red.`]}]},{id:`callout`,title:`Callouts`,blocks:[{t:`p`,text:"Wrap content in `:::note` or `:::warning` and close it with `:::`. Anything Markdown can do works inside."},{t:`example`,example:`callout`,alt:`A note callout and a warning callout with its own title`,result:!0},{t:`ul`,items:['Use `{title="…"}` to change the heading. By default it is note or warning.',"**The outer block needs more colons than any block inside it**, or the inner closing `:::` closes the outer one too. To put a chart in a callout, open it with `::::note` and close it with `::::`.",`A block with a name that is not recognised is shown as a plain block, not as an error.`]}]},{id:`pagebreak`,title:`Page breaks`,blocks:[{t:`p`,text:"Write `::pagebreak` on a line of its own. When you print or export to PDF, what follows starts on a new page."},{t:`example`,example:`pagebreak`,alt:null,result:!1},{t:`pagebreak`},{t:`ul`,items:[`It must be alone on its line.`,`It is not visible in the preview or on screen; it only breaks the page when printing.`,`An exported HTML file breaks the page the same way when it is printed from a browser.`]}]},{id:`caption`,title:`Image captions`,blocks:[{t:`p`,text:`An image on a line of its own, with description text, shows that text under the picture as a caption.`},{t:`example`,example:`caption`,alt:null,result:!1},{t:`ul`,items:[`An image in the middle of a sentence, or one without description text, has no caption.`,"To hide captions, add `figcaption { display: none }` to the theme's CSS.",`The toolbar's image button lets you drop several images in at once; the description is left empty, so add a caption only where you want one.`]}]}]},l=`:::note
+A plain note. It can hold any **Markdown**, such as lists and \`code\`.
+:::
+
+:::warning{title="Careful"}
+A warning with a title of its own.
+:::
+`,u=`![A sunset over the bay](./sunset.jpg)
+`,d=`\`\`\`chart
+type: line
+data:
+  labels: [Q1, Q2, Q3, Q4]
+  datasets:
+    - label: Sales
+      data: [5, 9, 7, 12]
+    - label: Costs
+      data: [3, 4, 6, 5]
+options:
+  plugins:
+    title: { display: true, text: "Quarterly sales" }
+\`\`\`
+`,f=`:::chart{type=bar title="Monthly revenue"}
+| Month | 2025 | 2026 |
+| --- | --- | --- |
+| Jan | 10 | 12 |
+| Feb | 20 | 18 |
+| Mar | 15 | 22 |
+:::
+`,p=`Euler's identity, inline: $e^{i\\pi} + 1 = 0$.
+
+A formula on its own:
+
+$$
+\\int_0^1 x^2\\,dx = \\frac{1}{3}
+$$
+`,m=`\`\`\`mermaid
+graph LR
+  A[Idea] --> B{Worth it?}
+  B -- yes --> C[Build it]
+  B -- no --> D[Shelve it]
+\`\`\`
+`,h=`Content of the first page.
+
+::pagebreak
+
+Content of the second page.
+`,g=`[x] A line of its own, done
+[ ] A line of its own, to do
+
+- [x] Inside a list
+  - [x] Nested and done
+  - [ ] Nested and open
+
+| Task | Done |
+| --- | --- |
+| Write the docs | [x] |
+| Ship it | [ ] |
+`,_=t(),v={callout:l,caption:u,"chart-config":d,"chart-table":f,math:p,mermaid:m,pagebreak:h,todo:g},y={"zh-TW":s,en:c};function b(){return(0,_.jsx)(i,{docs:y,files:v,current:`syntax`})}var x=window.matchMedia(`(prefers-color-scheme: dark)`),S=()=>{document.documentElement.classList.toggle(`dark`,x.matches)};S(),x.addEventListener(`change`,S);var C=document.getElementById(`root`),w=(0,_.jsx)(a.StrictMode,{children:(0,_.jsx)(b,{})});C.hasChildNodes()?(0,o.hydrateRoot)(C,w):(0,o.createRoot)(C).render(w);

@@ -1,0 +1,27 @@
+/* rose.css: the file name is the theme name. */
+.markdown-body {
+  color: #3b2f2f;
+  background: #fffaf7;
+  font-family: 'Noto Serif', 'Noto Serif TC', Georgia, serif;
+}
+.markdown-body h1, .markdown-body h2 { color: #9f1239; padding-bottom: 0.3em; border-bottom: 1px solid #fecdd3; }
+.markdown-body a { color: #be123c; }
+.markdown-body blockquote { color: #7f5b5b; border-left: 4px solid #fda4af; }
+.markdown-body code:not(pre code) { padding: 0.15em 0.4em; border-radius: 4px; background: #ffe4e6; color: #9f1239; }
+.markdown-body pre { background: #fff1f2; }
+.markdown-body th, .markdown-body td { border: 1px solid #fecdd3; }
+.markdown-body tbody tr:nth-child(even) { background: #fff1f2; }
+
+/* Charts and Mermaid read these custom properties. */
+.markdown-body {
+  --chart-1: #e11d48;
+  --chart-2: #f59e0b;
+  --chart-3: #0d9488;
+  --chart-4: #7c3aed;
+  --chart-text: #3b2f2f;
+  --chart-grid: #fecdd3;
+  --mermaid-primary: #ffe4e6;
+  --mermaid-primary-border: #e11d48;
+  --mermaid-primary-text: #3b2f2f;
+  --mermaid-line: #9f1239;
+}
