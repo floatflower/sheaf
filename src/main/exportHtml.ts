@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 import { copyFile, mkdir, readFile, stat, writeFile } from 'fs/promises'
-import { basename, dirname, extname, join } from 'path'
+import { basename, dirname, extname, join, relative } from 'path'
 
 const IMAGE_EXT: Record<string, string> = {
   'image/png': '.png',
@@ -26,6 +26,15 @@ const safeName = (name: string): string => name.replace(/[\\/:*?"<>|\u0000-\u001
 const slug = (name: string): string => name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'font'
 const encodeSegment = (s: string): string => encodeURIComponent(s).replace(/[()]/g, (c) => `%${c.charCodeAt(0).toString(16).toUpperCase()}`)
 
+/** In the page, stands for the `<name>_files` folder, which is only known once the user has picked where to save. */
+export const FILES_TOKEN = '@@SHEAF_FILES@@'
+
+/** A file a plugin wants beside the page: `path` is relative to the `<name>_files` folder. */
+export interface PluginFile {
+  path: string
+  data: Uint8Array
+}
+
 const DATA_URI = /^data:([^;,]+);base64,(.*)$/s
 
 /**
@@ -35,7 +44,7 @@ const DATA_URI = /^data:([^;,]+);base64,(.*)$/s
  *
  * `themesDir` is where a custom theme's relative `url(...)` is resolved from.
  */
-export async function writeHtmlWithAssets(html: string, htmlPath: string, themesDir: string): Promise<void> {
+export async function writeHtmlWithAssets(html: string, htmlPath: string, themesDir: string, pluginFiles: PluginFile[] = []): Promise<void> {
   const folder = `${basename(htmlPath, extname(htmlPath))}_files`
   const root = join(dirname(htmlPath), folder)
   const urlFor = (kind: 'images' | 'fonts', file: string): string => `${encodeSegment(folder)}/${kind}/${encodeSegment(file)}`
@@ -121,6 +130,13 @@ export async function writeHtmlWithAssets(html: string, htmlPath: string, themes
   }
   for (const [original, replacement] of await Promise.all(styles)) html = html.replace(original, () => replacement)
 
+  html = html.split(FILES_TOKEN).join(encodeSegment(folder))
+  for (const f of pluginFiles) {
+    // Plugin file names come from plugins: keep them inside the folder.
+    const path = join(root, f.path)
+    if (relative(root, path).startsWith('..')) throw new Error(`Bad plugin file path: ${f.path}`)
+    writes.push({ path, data: Buffer.from(f.data) })
+  }
   for (const w of writes) {
     await mkdir(dirname(w.path), { recursive: true })
     if (w.data) await writeFile(w.path, w.data)

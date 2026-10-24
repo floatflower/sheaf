@@ -21,7 +21,10 @@ export interface DirectiveOutput {
 
 /** Shape a user plugin (an ES module's default export) must have. */
 export interface MdPlugin {
-  name: string
+  /** Filled in by the app from the plugin's `metadata.json` (or the built-in's id); a plugin does not set it. */
+  id?: string
+  /** Display name. For a plugin folder this comes from `metadata.json`, so the module does not need it. */
+  name?: string
   /** `:::name{attr=1}` style syntax → an HTML element. Children are rendered inside it. */
   directives?: Record<string, (ctx: DirectiveContext) => DirectiveOutput>
   remarkPlugins?: PluggableList
@@ -35,10 +38,48 @@ export interface MdPlugin {
   docs?: string
   /** Runs on the rendered DOM (preview and export), e.g. to draw diagrams into placeholders. */
   postRender?: (root: HTMLElement, ctx: RenderContext) => void | Promise<void>
+  /**
+   * Runs only while exporting HTML (Embedded or Bundle), never for the preview or a PDF. Returns what to add to
+   * the page, e.g. a script that makes images open in a lightbox.
+   */
+  exportHtml?: (ctx: ExportContext) => ExportAssets | Promise<ExportAssets>
 }
+
+/** Where the rendered DOM is going. */
+export type RenderTarget = 'preview' | 'html' | 'html-bundle' | 'pdf'
 
 export interface RenderContext {
   themeCss: string
+  target: RenderTarget
+}
+
+export interface ExportContext {
+  /** `html` is one self-contained file, `html-bundle` moves images, fonts and plugin files into a folder. */
+  target: 'html' | 'html-bundle'
+  themeCss: string
+  /** A text file from the plugin's own folder (path relative to it, no `..`). */
+  readAsset: (path: string) => Promise<string>
+  /** Any file from the plugin's own folder. */
+  readAssetBytes: (path: string) => Promise<Uint8Array>
+}
+
+/**
+ * A script or stylesheet for the exported page. With `file` the Bundle export writes it to the page's folder and
+ * links it, while the Embedded export inlines it either way. Without `file` it is always inline.
+ */
+export interface ExportResource {
+  code: string
+  file?: string
+  /** Scripts only: `type="module"`. */
+  module?: boolean
+}
+
+export interface ExportAssets {
+  /** Raw HTML appended to `<head>`. */
+  head?: string
+  styles?: ExportResource[]
+  /** Added before `</body>`, in this order. */
+  scripts?: ExportResource[]
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

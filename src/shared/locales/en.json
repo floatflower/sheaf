@@ -222,7 +222,14 @@
     "math": "LaTeX math",
     "chart": "Charts (Chart.js)",
     "todo": "To-do lists",
-    "noDefaultExport": "The plugin file has no default export"
+    "noDefaultExport": "The plugin file has no default export",
+    "lightbox": "Image lightbox (HTML export)",
+    "problem": {
+      "legacy": "A loose .js file is no longer loaded. Put it in its own folder as index.js, with a metadata.json beside it.",
+      "noMetadata": "Missing metadata.json",
+      "invalidMetadata": "Invalid metadata.json: {{detail}}",
+      "noEntry": "Cannot read the plugin file ({{detail}})"
+    }
   },
   "chart": {
     "alt": "Chart",
@@ -259,5 +266,12 @@
     "title": "Version {{version}} is available",
     "body": "Click to open the download page",
     "close": "Close, and do not remind me about this version"
+  },
+  "exportError": {
+    "title": "{{kind}} export failed",
+    "description": "Something went wrong while exporting.",
+    "plugin": "The plugin “{{name}}” failed while exporting.",
+    "save": "Save error as .txt",
+    "close": "Close"
   }
 }

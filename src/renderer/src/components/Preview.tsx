@@ -38,7 +38,7 @@ export default function Preview({ source, themeCss, plugins, docPath, onRendered
         article.current.innerHTML = html
         setRendered(html)
         setError(null)
-        await runPostRender(article.current, plugins, { themeCss })
+        await runPostRender(article.current, plugins, { themeCss, target: 'preview' })
         if (!stale) onRenderedRef.current?.(source, null)
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err)

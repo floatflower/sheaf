@@ -2,6 +2,7 @@ import { contextBridge, ipcRenderer, webUtils } from 'electron'
 import type { MenuAction } from '../main/menu'
 import type { AiPatch, AiState } from '../shared/ai'
 import type { FolderScan } from '../main/folder'
+import type { PluginFolder } from '../shared/plugins'
 import type { Lang, LanguageSetting } from '../shared/i18n'
 import type { UpdateState } from '../shared/update'
 
@@ -28,10 +29,12 @@ const api = {
   saveFile: (path: string | null, content: string) => ipcRenderer.invoke('file:save', path, content),
   embedFonts: (text: string, kinds: ('sans' | 'serif')[]) => ipcRenderer.invoke('fonts:embed', text, kinds) as Promise<string>,
   exportHtml: (html: string) => ipcRenderer.invoke('export:html', html),
-  exportHtmlBundle: (html: string) => ipcRenderer.invoke('export:html-bundle', html),
+  exportHtmlBundle: (html: string, files: { path: string; data: Uint8Array }[]) => ipcRenderer.invoke('export:html-bundle', html, files),
+  saveText: (defaultName: string, text: string) => ipcRenderer.invoke('file:save-text', defaultName, text) as Promise<boolean>,
   exportPdf: (html: string) => ipcRenderer.invoke('export:pdf', html),
   listThemes: () => ipcRenderer.invoke('themes:list'),
-  listPlugins: () => ipcRenderer.invoke('plugins:list'),
+  listPlugins: () => ipcRenderer.invoke('plugins:list') as Promise<PluginFolder[]>,
+  readPluginAsset: (id: string, path: string) => ipcRenderer.invoke('plugins:read-asset', id, path) as Promise<Uint8Array>,
   userPaths: () => ipcRenderer.invoke('paths:user'),
   onMenuAction: (cb: (action: MenuAction) => void) => {
     const handler = (_e: unknown, action: MenuAction): void => cb(action)

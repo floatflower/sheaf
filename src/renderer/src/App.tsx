@@ -27,7 +27,8 @@ import type { FolderScan, TreeNode } from '../../main/folder'
 import Preview from '@/components/Preview'
 import { builtinThemes, type Theme } from '@/lib/themes'
 import { loadPlugins, type PluginEntry } from '@/lib/plugins'
-import { buildExportHtml } from '@/lib/export'
+import { buildExportHtml, PluginExportError } from '@/lib/export'
+import ExportErrorDialog, { errorReport, type ExportErrorInfo } from '@/components/ExportErrorDialog'
 import { buildSyntaxGuide } from '@/lib/syntaxGuide'
 import { setLanguage } from '@/i18n'
 import { dispatchReviewed } from '@/lib/review'
@@ -387,24 +388,40 @@ export default function App(): React.JSX.Element {
     [sidebarWidth]
   )
 
+  const [exportError, setExportError] = useState<ExportErrorInfo | null>(null)
+
   const exportAs = useCallback(
     async (kind: 'html' | 'html-bundle' | 'pdf') => {
       setStatus(t('status.exporting'))
+      const label = kind === 'pdf' ? 'PDF' : 'HTML'
       try {
-        const html = await buildExportHtml(textRef.current, doc.name, theme.css, plugins, doc.path)
+        const { html, files } = await buildExportHtml(textRef.current, doc.name, theme.css, plugins, doc.path, kind)
         const ok =
           kind === 'pdf'
             ? await window.api.exportPdf(html)
             : kind === 'html-bundle'
-              ? await window.api.exportHtmlBundle(html)
+              ? await window.api.exportHtmlBundle(html, files)
               : await window.api.exportHtml(html)
-        setStatus(ok ? t('status.exported', { kind: kind === 'pdf' ? 'PDF' : 'HTML' }) : '')
+        setStatus(ok ? t('status.exported', { kind: label }) : '')
       } catch (err) {
-        setStatus(t('status.exportFailed', { error: err instanceof Error ? err.message : String(err) }))
+        const cause = err instanceof PluginExportError ? err.cause : err
+        setStatus('')
+        setExportError({
+          kind: label,
+          plugin: err instanceof PluginExportError ? { id: err.pluginId, name: err.pluginName } : undefined,
+          message: cause instanceof Error ? cause.message : String(cause),
+          stack: cause instanceof Error ? cause.stack : undefined
+        })
       }
     },
-    [doc.name, theme.css, plugins, t]
+    [doc.name, theme.css, plugins, doc.path, t]
   )
+
+  const saveExportError = useCallback(async () => {
+    if (!exportError) return
+    const info = await window.api.getAppInfo()
+    await window.api.saveText('sheaf-export-error.txt', errorReport(exportError, info))
+  }, [exportError])
 
   // Collapse instead of unmounting so the editor keeps its undo history and cursor.
   useEffect(() => {
@@ -703,6 +720,8 @@ export default function App(): React.JSX.Element {
       {update?.notice && update.version && (
         <UpdateNotice version={update.version} onOpen={() => void window.api.openUpdatePage()} onClose={() => void window.api.dismissUpdate()} />
       )}
+
+      <ExportErrorDialog error={exportError} onClose={() => setExportError(null)} onSave={() => void saveExportError()} />
 
       <AlertDialog open={!!savePrompt} onOpenChange={(open) => !open && answerSave('cancel')}>
         <AlertDialogContent

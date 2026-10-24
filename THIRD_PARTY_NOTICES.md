@@ -11,6 +11,12 @@ them. The fonts are copyright The Noto Project Authors and licensed under the
 [SIL Open Font License 1.1](https://openfontlicense.org); the licence texts are the `OFL-*.txt` files in
 that folder and ship with the app.
 
+## Swiper
+
+`src/renderer/src/builtin/lightbox/` contains the Swiper bundle (`swiper-bundle.min.js` and `.css`), which the
+built-in image lightbox adds to exported HTML pages. Swiper is copyright Vladimir Kharlampidi and released under
+the [MIT License](https://github.com/nolimits4web/swiper/blob/master/LICENSE).
+
 ## npm dependencies
 
 The libraries the app is built from (Electron, React, CodeMirror, unified and others) are distributed

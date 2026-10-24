@@ -222,7 +222,14 @@
     "math": "LaTeX 数式",
     "chart": "グラフ（Chart.js）",
     "todo": "ToDo リスト",
-    "noDefaultExport": "プラグインファイルに default export がありません"
+    "noDefaultExport": "プラグインファイルに default export がありません",
+    "lightbox": "画像ライトボックス（HTML 書き出し）",
+    "problem": {
+      "legacy": "単独の .js ファイルは読み込まれなくなりました。専用のフォルダに index.js として置き、隣に metadata.json を置いてください。",
+      "noMetadata": "metadata.json が見つかりません",
+      "invalidMetadata": "metadata.json の形式が正しくありません: {{detail}}",
+      "noEntry": "プラグインのファイルを読み込めません（{{detail}}）"
+    }
   },
   "chart": {
     "alt": "グラフ",
@@ -259,5 +266,12 @@
     "title": "バージョン {{version}} が利用できます",
     "body": "クリックするとダウンロードページを開きます",
     "close": "閉じる（このバージョンは再通知しません）"
+  },
+  "exportError": {
+    "title": "{{kind}} の書き出しに失敗しました",
+    "description": "書き出し中にエラーが発生しました。",
+    "plugin": "プラグイン「{{name}}」が書き出し中にエラーになりました。",
+    "save": "エラーを .txt で保存",
+    "close": "閉じる"
   }
 }

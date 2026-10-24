@@ -9,7 +9,8 @@ import type { AiPatch, AiState } from '../shared/ai'
 import { setMainLanguage, t } from './i18n'
 import { access, cp, mkdir, readFile, readdir, rm, stat, writeFile } from 'fs/promises'
 import { embedFonts, type FontKind } from './fonts'
-import { writeHtmlWithAssets } from './exportHtml'
+import { writeHtmlWithAssets, type PluginFile } from './exportHtml'
+import { listPluginFolders, readPluginAsset } from './plugins'
 import { registerImageIpc } from './images'
 import { UpdateController } from './updater'
 
@@ -239,13 +240,21 @@ function registerIpc(): void {
   })
 
   // The same page, with its images and fonts moved out into a folder beside it.
-  ipcMain.handle('export:html-bundle', async (_e, html: string) => {
+  ipcMain.handle('export:html-bundle', async (_e, html: string, files: PluginFile[]) => {
     const r = await dialog.showSaveDialog({
       defaultPath: 'document.html',
       filters: [{ name: 'HTML', extensions: ['html'] }]
     })
     if (r.canceled || !r.filePath) return false
-    await writeHtmlWithAssets(html, r.filePath, userDir('themes'))
+    await writeHtmlWithAssets(html, r.filePath, userDir('themes'), files ?? [])
+    return true
+  })
+
+  // The export error report, for the user to attach to a bug report or send to a plugin's author.
+  ipcMain.handle('file:save-text', async (_e, defaultName: string, text: string) => {
+    const r = await dialog.showSaveDialog({ defaultPath: defaultName, filters: [{ name: 'Text', extensions: ['txt'] }] })
+    if (r.canceled || !r.filePath) return false
+    await writeFile(r.filePath, text, 'utf-8')
     return true
   })
 
@@ -279,11 +288,8 @@ function registerIpc(): void {
     )
   })
 
-  ipcMain.handle('plugins:list', async () => {
-    const dir = await ensureDir('plugins')
-    const names = await listFiles(dir, '.js')
-    return Promise.all(names.map(async (n) => ({ name: n, code: await readFile(join(dir, n), 'utf-8') })))
-  })
+  ipcMain.handle('plugins:list', async () => listPluginFolders(await ensureDir('plugins')))
+  ipcMain.handle('plugins:read-asset', async (_e, id: string, path: string) => readPluginAsset(await ensureDir('plugins'), id, path))
 
   ipcMain.handle('paths:user', () => ({ themes: userDir('themes'), plugins: userDir('plugins') }))
 

@@ -222,7 +222,14 @@
     "math": "LaTeX 数学公式",
     "chart": "图表（Chart.js）",
     "todo": "待办清单",
-    "noDefaultExport": "插件文件没有 default export"
+    "noDefaultExport": "插件文件没有 default export",
+    "lightbox": "图片灯箱（HTML 导出）",
+    "problem": {
+      "legacy": "单独的 .js 文件不再加载。请放进自己的文件夹并命名为 index.js，旁边再放一个 metadata.json。",
+      "noMetadata": "找不到 metadata.json",
+      "invalidMetadata": "metadata.json 格式错误：{{detail}}",
+      "noEntry": "读不到插件文件（{{detail}}）"
+    }
   },
   "chart": {
     "alt": "图表",
@@ -259,5 +266,12 @@
     "title": "有新版本 {{version}}",
     "body": "点一下前往下载页面",
     "close": "关闭，这个版本不再提醒"
+  },
+  "exportError": {
+    "title": "{{kind}} 导出失败",
+    "description": "导出时发生错误。",
+    "plugin": "插件“{{name}}”在导出时发生错误。",
+    "save": "将错误保存为 .txt",
+    "close": "关闭"
   }
 }

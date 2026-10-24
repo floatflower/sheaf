@@ -222,7 +222,14 @@
     "math": "LaTeX 數學公式",
     "chart": "圖表（Chart.js）",
     "todo": "待辦清單",
-    "noDefaultExport": "plugin 檔案沒有 default export"
+    "noDefaultExport": "plugin 檔案沒有 default export",
+    "lightbox": "圖片燈箱（HTML 匯出）",
+    "problem": {
+      "legacy": "單獨的 .js 檔不再載入。請放進自己的資料夾並命名為 index.js，旁邊再放一個 metadata.json。",
+      "noMetadata": "找不到 metadata.json",
+      "invalidMetadata": "metadata.json 格式錯誤：{{detail}}",
+      "noEntry": "讀不到插件檔案（{{detail}}）"
+    }
   },
   "chart": {
     "alt": "圖表",
@@ -259,5 +266,12 @@
     "title": "有新版本 {{version}}",
     "body": "點一下前往下載頁面",
     "close": "關閉，這個版本不再提醒"
+  },
+  "exportError": {
+    "title": "{{kind}} 匯出失敗",
+    "description": "匯出時發生錯誤。",
+    "plugin": "插件「{{name}}」在匯出時發生錯誤。",
+    "save": "將錯誤存成 .txt",
+    "close": "關閉"
   }
 }

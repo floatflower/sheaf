@@ -19,7 +19,8 @@ export default function PluginsTab({ entries, onToggle, onOpenFolder, onReload }
     <ToggleRow
       key={e.file}
       id={`plugin:${e.file}`}
-      title={e.builtin ? t(`plugins.${e.file.replace('builtin:', '')}`) : e.name}
+      title={e.builtin ? t(`plugins.${e.file.replace('builtin:', '')}`) : e.metadata?.version ? `${e.name} ${e.metadata.version}` : e.name}
+      hint={e.builtin ? undefined : [e.metadata?.description, e.metadata?.author].filter(Boolean).join(' · ') || undefined}
       problem={e.error ? t('settings.plugins.error', { error: e.error }) : undefined}
       checked={e.enabled}
       onChange={(enabled) => onToggle(e.file, enabled)}
