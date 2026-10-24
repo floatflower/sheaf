@@ -1,5 +1,4 @@
 export default {
-  name: 'Reading time',
   postRender(root) {
     const text = [...root.querySelectorAll('p, li, td, h1, h2, h3, h4, h5, h6')].map((el) => el.textContent).join('')
     const minutes = Math.max(1, Math.round(text.replace(/\s/g, '').length / 500))

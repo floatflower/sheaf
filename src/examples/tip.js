@@ -1,5 +1,4 @@
 export default {
-  name: 'Tip box',
   directives: {
     tip: ({ attributes }) => ({
       tagName: 'div',

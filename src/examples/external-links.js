@@ -9,7 +9,6 @@ function markExternalLinks() {
 }
 
 export default {
-  name: 'External links',
   rehypePlugins: [markExternalLinks],
   css: `.markdown-body a.external::after { content: ' ↗'; font-size: 0.8em; }`
 }
