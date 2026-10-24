@@ -514,7 +514,7 @@
         },
         {
           "t": "p",
-          "text": "The built-in Image lightbox plugin works exactly this way, and you can switch it off in Settings → Plugins. If `exportHtml` throws, or a file cannot be read, the export stops and a dialog names the plugin and offers a button that saves the error as a .txt file. Scripts in an exported page run in the reader's browser, not in the app."
+          "text": "If `exportHtml` throws, or a file cannot be read, the export stops and a dialog names the plugin and offers a button that saves the error as a .txt file. Scripts in an exported page run in the reader's browser, not in the app."
         },
         {
           "t": "h",
