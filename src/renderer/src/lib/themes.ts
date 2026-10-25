@@ -10,6 +10,6 @@ export interface Theme {
 
 export const builtinThemes: Theme[] = [
   { name: 'Default', css: defaultCss, builtin: true },
-  { name: 'Manuscript', css: defaultCss + '\n' + manuscriptCss, builtin: true },
-  { name: 'Scholia', css: defaultCss + '\n' + scholiaCss, builtin: true }
+  { name: 'Manuscript', css: manuscriptCss, builtin: true },
+  { name: 'Scholia', css: scholiaCss, builtin: true }
 ]
