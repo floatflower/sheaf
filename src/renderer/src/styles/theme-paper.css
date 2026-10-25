@@ -1,0 +1,55 @@
+/* Paper: the Default theme set like a printed article. Serif text at 11pt, justified, a page-like column, plain
+   headings, three-line tables. Only the look changes; this is added after the Default rules. */
+.markdown-body {
+  font-family: 'Noto Serif', 'Noto Serif TC', 'Noto Serif SC', 'Noto Serif JP', 'Noto Serif KR', 'Times New Roman', Georgia, serif;
+  font-size: 11pt;
+  line-height: 1.6;
+  color: #111;
+  text-align: justify;
+  hyphens: auto;
+  --chart-font: 'Noto Serif', 'Noto Serif TC', 'Noto Serif SC', Georgia, serif;
+}
+@media screen {
+  .markdown-body { max-width: 780px; padding: 3rem 4rem; }
+}
+@media print {
+  .markdown-body { padding: 25mm; }
+}
+
+.markdown-body p { margin: 0 0 0.8em; orphans: 3; widows: 3; }
+.markdown-body li { line-height: 1.55; }
+
+.markdown-body h1, .markdown-body h2, .markdown-body h3, .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+  border: 0;
+  padding: 0;
+  text-align: left;
+  break-after: avoid;
+}
+.markdown-body h1 { margin: 0 0 0.8em; font-size: 1.75em; line-height: 1.25; text-align: center; }
+.markdown-body h2 { margin: 1.6em 0 0.5em; font-size: 1.3em; }
+.markdown-body h3 { margin: 1.3em 0 0.4em; font-size: 1.1em; }
+.markdown-body h4 { margin: 1.1em 0 0.3em; font-size: 1em; font-style: italic; }
+.markdown-body h5, .markdown-body h6 { font-size: 1em; font-weight: 600; opacity: 1; }
+
+.markdown-body a { color: inherit; text-decoration: underline; text-decoration-thickness: 0.05em; text-underline-offset: 0.15em; }
+.markdown-body blockquote { margin: 1em 2em; padding: 0 0 0 1em; color: #333; border-left: 2px solid #999; }
+.markdown-body hr { border-top: 1px solid #999; }
+
+.markdown-body code:not(pre code) { padding: 0.05em 0.3em; border-radius: 2px; background: #f1f1f1; color: inherit; font-size: 0.88em; }
+.markdown-body pre { padding: 0.8rem 1rem; border: 1px solid #d4d4d4; border-radius: 2px; background: #fafafa; text-align: left; hyphens: none; }
+.markdown-body pre code { font-size: 0.8em; }
+
+/* Three-line table: a rule above, below the header and below, nothing else. */
+.markdown-body table { font-size: 0.95em; border-top: 1.5px solid #111; border-bottom: 1.5px solid #111; }
+.markdown-body th, .markdown-body td { border: 0; padding: 0.35rem 0.7rem; text-align: left; }
+.markdown-body th { border-bottom: 1px solid #111; font-weight: 600; }
+.markdown-body tbody tr:nth-child(even) { background: none; }
+
+.markdown-body figcaption { margin-top: 0.4em; font-size: 0.9em; opacity: 1; text-align: center; }
+.markdown-body .callout { border-radius: 0; border-left-color: #555; background: #f4f4f4; }
+.markdown-body .callout-warning { border-left-color: #8a6d00; background: #f8f5e8; }
+
+/* Footnotes (GFM): a small block under a short rule. */
+.markdown-body section[data-footnotes] { margin-top: 2em; padding-top: 0.6em; border-top: 1px solid #999; font-size: 0.85em; }
+.markdown-body section[data-footnotes] > h2 { display: none; }
+.markdown-body section[data-footnotes] ol { margin: 0; }
