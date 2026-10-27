@@ -147,6 +147,7 @@ export default function App(): React.JSX.Element {
   const dirty = doc.dirty
   // Set while the "save before closing?" dialog is up; answering resolves the promise `askSave` returned.
   const [savePrompt, setSavePrompt] = useState<{ name: string } | null>(null)
+  const [missing, setMissing] = useState<{ path: string; kind: 'file' | 'folder' } | null>(null)
   const savePromptResolve = useRef<((choice: SaveChoice) => void) | null>(null)
   const saveButton = useRef<HTMLButtonElement>(null)
   const [userThemes, setUserThemes] = useState<Theme[]>([])
@@ -704,6 +705,7 @@ export default function App(): React.JSX.Element {
       case 'close-workspace': return closeWorkspace()
       case 'workspace-changed': return void refreshWorkspace()
       case 'file-changed': return void onFileChanged(a.path)
+      case 'recent-missing': return setMissing({ path: a.path, kind: a.kind })
       case 'open-external': return openTab(a.path, a.name, a.content)
     }
   }
@@ -864,6 +866,19 @@ export default function App(): React.JSX.Element {
       )}
 
       <ExportErrorDialog error={exportError} onClose={() => setExportError(null)} onSave={() => void saveExportError()} />
+
+      <AlertDialog open={!!missing} onOpenChange={(open) => !open && setMissing(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t(missing?.kind === 'folder' ? 'recentMissing.folderTitle' : 'recentMissing.fileTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('recentMissing.description')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <p className="rounded-md border bg-muted px-3 py-2 text-xs break-all">{missing?.path}</p>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setMissing(null)}>{t('recentMissing.ok')}</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!savePrompt} onOpenChange={(open) => !open && answerSave('cancel')}>
         <AlertDialogContent

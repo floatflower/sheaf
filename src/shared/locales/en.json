@@ -45,8 +45,6 @@
     "exportHtmlBundle": "HTML (Bundle)"
   },
   "dialog": {
-    "recentMissingFile": "The file could not be found. It may have been moved or deleted.",
-    "recentMissingFolder": "The folder could not be found. It may have been moved or deleted.",
     "token": {
       "title": "Regenerate the connection token?",
       "detail": "AI clients that are connected or already set up will stop working and need to be configured again with the new command.",
@@ -280,5 +278,11 @@
     "plugin": "The plugin “{{name}}” failed while exporting.",
     "save": "Save error as .txt",
     "close": "Close"
+  },
+  "recentMissing": {
+    "fileTitle": "File not found",
+    "folderTitle": "Folder not found",
+    "description": "It may have been moved or deleted. It has been removed from the recent list.",
+    "ok": "OK"
   }
 }

@@ -136,16 +136,10 @@ const menuActions: MenuActions = {
   recent: recentItems,
   openRecent: async (item) => {
     if (await stat(item.path).catch(() => null)) return queueOpen(item.path)
-    // Gone since it was last opened: say so, and stop offering it.
-    const win = BrowserWindow.getAllWindows()[0]
-    const options = {
-      type: 'warning' as const,
-      message: t(item.kind === 'folder' ? 'dialog.recentMissingFolder' : 'dialog.recentMissingFile'),
-      detail: item.path
-    }
-    await (win ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options))
+    // Gone since it was last opened: stop offering it, and let the window say so.
     await removeRecent(item.path)
     rebuildMenu()
+    sendToRenderer({ type: 'recent-missing', path: item.path, kind: item.kind })
   },
   clearRecent: async () => {
     await clearRecent()

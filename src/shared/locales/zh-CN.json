@@ -45,8 +45,6 @@
     "exportHtmlBundle": "HTML（打包）"
   },
   "dialog": {
-    "recentMissingFile": "找不到这个文件，它可能已被移动或删除。",
-    "recentMissingFolder": "找不到这个文件夹，它可能已被移动或删除。",
     "token": {
       "title": "重新生成连接 token？",
       "detail": "当前已连接或已配置好的 AI 客户端将失效，需要用新的命令重新配置。",
@@ -280,5 +278,11 @@
     "plugin": "插件“{{name}}”在导出时发生错误。",
     "save": "将错误保存为 .txt",
     "close": "关闭"
+  },
+  "recentMissing": {
+    "fileTitle": "找不到文件",
+    "folderTitle": "找不到文件夹",
+    "description": "它可能已被移动或删除，已从最近项目中移除。",
+    "ok": "好"
   }
 }

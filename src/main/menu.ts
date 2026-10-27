@@ -13,6 +13,7 @@ export type MenuAction =
   | { type: 'close-workspace' }
   | { type: 'workspace-changed' }
   | { type: 'file-changed'; path: string }
+  | { type: 'recent-missing'; path: string; kind: 'file' | 'folder' }
 
 function send(action: MenuAction): void {
   BrowserWindow.getFocusedWindow()?.webContents.send('menu:action', action)
