@@ -1,11 +1,11 @@
-import { mkdir, readFile, realpath, stat, writeFile } from 'fs/promises'
+import { mkdir, readFile, realpath, rename, stat, writeFile } from 'fs/promises'
 import { dirname, isAbsolute, join, relative, resolve, sep } from 'path'
 import { scanFolder, type TreeNode } from './folder'
 
 /*
  * File access for the AI tools. Everything is confined to the folder open in the sidebar, to
  * Markdown files, and to visible paths (nothing under a dot-directory), so an assistant can keep a
- * journal or read notes but cannot reach the rest of the disk.
+ * read and edit notes but cannot reach the rest of the disk.
  */
 
 const MAX_READ = 2 * 1024 * 1024
@@ -126,6 +126,17 @@ export async function createDocument(root: string, requested: string, content: s
   await mkdir(dirname(path), { recursive: true })
   await writeFile(path, content, 'utf-8')
   return { path, created: !there }
+}
+
+/** Move or rename a file within the folder. Never replaces an existing file. */
+export async function renameDocument(root: string, from: string, to: string): Promise<{ from: string; to: string }> {
+  const source = await resolveDocument(root, from)
+  const target = await resolveDocument(root, to)
+  if (!(await exists(source))) fail(`找不到檔案：${from}`)
+  if (await exists(target)) fail(`目標已存在：${to}`)
+  await mkdir(dirname(target), { recursive: true })
+  await rename(source, target)
+  return { from, to }
 }
 
 /** What to add after `existing` so that `text` lands as its own paragraph block. */

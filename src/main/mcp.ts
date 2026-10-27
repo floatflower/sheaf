@@ -12,6 +12,7 @@ import {
   createDocument,
   editDocument,
   listDocuments,
+  renameDocument,
   readDocument,
   resolveDocument,
   searchDocuments
@@ -134,7 +135,7 @@ function buildServer(settings: () => McpSettings, call: CallRenderer, workspaceR
   // Resolve the folder, run `work`, and turn any file problem into a tool error the model can read.
   const withFolder = async (work: (root: string) => Promise<unknown>): Promise<ReturnType<typeof text> | ReturnType<typeof failure>> => {
     const root = workspaceRoot()
-    if (!root) return failure('目前沒有開啟資料夾。請使用者先在編輯器用「開啟資料夾」打開日誌或筆記所在的資料夾。')
+    if (!root) return failure('目前沒有開啟資料夾。請使用者先在編輯器用「開啟資料夾」打開要操作的文件所在的資料夾。')
     try {
       return text(await work(root))
     } catch (err) {
@@ -147,28 +148,23 @@ function buildServer(settings: () => McpSettings, call: CallRenderer, workspaceR
     {
       title: '列出文件',
       description:
-        '列出使用者目前開啟的資料夾裡的 .md 檔（路徑相對於該資料夾、最近修改的在前），並附上今天的日期與時間。可用 dir 限制子資料夾、glob 篩選（支援 * ** ?，例如 "journal/*.md"）。用它判斷今天的日誌存不存在、日誌放在哪。',
+        '列出使用者目前開啟的資料夾裡的 .md 檔（路徑相對於該資料夾、最近修改的在前）。可用 dir 限制子資料夾、glob 篩選（支援 * ** ?，例如 "notes/*.md"），用來判斷某個檔案存不存在、檔案放在哪。',
       inputSchema: {
         dir: z.string().optional().describe('只列這個子資料夾，相對於開啟的資料夾'),
-        glob: z.string().optional().describe('檔名或相對路徑的樣式，例如 journal/2026-*.md')
+        glob: z.string().optional().describe('檔名或相對路徑的樣式，例如 notes/*.md')
       },
       annotations: { readOnlyHint: true }
     },
     (args) =>
-      withFolder(async (root) => {
-        const now = new Date()
-        const pad = (n: number): string => String(n).padStart(2, '0')
-        const today = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
-        return { today, time: `${pad(now.getHours())}:${pad(now.getMinutes())}`, ...(await listDocuments(root, args)) }
-      })
+      withFolder((root) => listDocuments(root, args))
   )
 
   server.registerTool(
     'read_document',
     {
       title: '讀取指定文件',
-      description: '依路徑讀取資料夾裡任一個 .md 檔（不限於正在編輯的那份）。寫入前先讀，避免重複。如果檔案正開在編輯器裡，回傳的是編輯器中的最新內容。',
-      inputSchema: { path: z.string().min(1).describe('相對於開啟資料夾的路徑，例如 journal/2026-10-27.md') },
+      description: '依路徑讀取資料夾裡任一個 .md 檔（不限於正在編輯的那份）。如果檔案正開在編輯器裡，回傳的是編輯器中的最新內容。',
+      inputSchema: { path: z.string().min(1).describe('相對於開啟資料夾的路徑，例如 notes/todo.md') },
       annotations: { readOnlyHint: true }
     },
     ({ path }) =>
@@ -184,7 +180,7 @@ function buildServer(settings: () => McpSettings, call: CallRenderer, workspaceR
     'search_documents',
     {
       title: '搜尋文件',
-      description: '在資料夾的所有 .md 檔裡找包含 query 的行（不分大小寫、純文字比對），回傳檔案、行號與該行內容，最多 50 筆。用來回頭查某個決定或主題出現在哪天。',
+      description: '在資料夾的所有 .md 檔裡找包含 query 的行（不分大小寫、純文字比對），回傳檔案、行號與該行內容，最多 50 筆。用來查某段文字出現在哪些檔案。',
       inputSchema: {
         query: z.string().min(1).describe('要找的文字'),
         dir: z.string().optional().describe('只搜這個子資料夾，相對於開啟的資料夾')
@@ -215,9 +211,9 @@ function buildServer(settings: () => McpSettings, call: CallRenderer, workspaceR
     {
       title: '附加到文件',
       description:
-        '在指定文件的結尾加一段文字（與前文隔一個空行）；檔案不存在時預設會建立（含需要的子資料夾）。不會切換使用者目前開著的文件，也不動游標。寫日誌時就用它：先 list_documents 取得今天日期與日誌位置，再附加例如 "## 14:30 — 摘要" 的一段。檔案沒開在編輯器時直接寫入磁碟；若它正是使用者目前編輯的文件，則走編輯器（可還原、可逐行審查）。',
+        '在指定文件的結尾加一段文字（與前文隔一個空行）；檔案不存在時預設會建立（含需要的子資料夾）。不會切換使用者目前開著的文件，也不動游標。適合持續記錄的檔案（紀錄、清單等）。檔案沒開在編輯器時直接寫入磁碟；若它正是使用者目前編輯的文件，則走編輯器（可還原、可逐行審查）。',
       inputSchema: {
-        path: z.string().min(1).describe('相對於開啟資料夾的路徑，例如 journal/2026-10-27.md'),
+        path: z.string().min(1).describe('相對於開啟資料夾的路徑，例如 notes/todo.md'),
         text: z.string().min(1).describe('要附加的文字'),
         createIfMissing: z.boolean().optional().describe('檔案不存在時是否建立，預設 true')
       },
@@ -255,6 +251,25 @@ function buildServer(settings: () => McpSettings, call: CallRenderer, workspaceR
         const full = await resolveDocument(root, path)
         if ((await tabStatus(full)).open) throw new FileToolError('這個檔案已在編輯器開啟，不能用建立來覆蓋；請改用 edit_document。')
         return { ok: true, ...(await createDocument(root, path, content, overwrite === true)), path }
+      })
+  )
+
+  server.registerTool(
+    'rename_document',
+    {
+      title: '重新命名或移動文件',
+      description: '把資料夾裡的 .md 檔改名或移到別的子資料夾（目標資料夾會自動建立）。目標已存在時回傳錯誤，不會覆蓋。檔案開在編輯器裡時不能改名，請先請使用者關掉它。',
+      inputSchema: {
+        from: z.string().min(1).describe('原路徑，相對於開啟資料夾'),
+        to: z.string().min(1).describe('新路徑，相對於開啟資料夾')
+      },
+      annotations: { destructiveHint: true, idempotentHint: false }
+    },
+    async ({ from, to }) =>
+      needsWrite() ??
+      withFolder(async (root) => {
+        if ((await tabStatus(await resolveDocument(root, from))).open) throw new FileToolError('這個檔案已在編輯器開啟，請先關掉它再改名。')
+        return { ok: true, ...(await renameDocument(root, from, to)) }
       })
   )
 
