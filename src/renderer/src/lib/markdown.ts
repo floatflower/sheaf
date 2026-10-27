@@ -131,7 +131,8 @@ function remarkDirectiveComponents(plugins: MdPlugin[]) {
 
 /**
  * A paragraph that holds nothing but an image (optionally wrapped in a link) becomes
- * `<figure>…<figcaption>alt</figcaption></figure>`. Themes that do not want captions can hide them
+ * `<figure>…<figcaption>alt</figcaption></figure>`, or a bare `<figure>` when there is no alt text,
+ * so such images are centred either way. Themes that do not want captions can hide them
  * with `figcaption { display: none }`.
  */
 function rehypeFigure() {
@@ -146,13 +147,15 @@ function rehypeFigure() {
       const inner = only.tagName === 'a' ? only.children.filter((c: AnyNode) => !isBlank(c)) : [only]
       const img = inner.length === 1 && inner[0].tagName === 'img' ? inner[0] : null
       const caption = String(img?.properties?.alt ?? '').trim()
-      if (!img || !caption) return
+      if (!img) return
 
       parent.children[index] = {
         type: 'element',
         tagName: 'figure',
         properties: {},
-        children: [only, { type: 'element', tagName: 'figcaption', properties: {}, children: [{ type: 'text', value: caption }] }]
+        children: caption
+          ? [only, { type: 'element', tagName: 'figcaption', properties: {}, children: [{ type: 'text', value: caption }] }]
+          : [only]
       }
     })
   }

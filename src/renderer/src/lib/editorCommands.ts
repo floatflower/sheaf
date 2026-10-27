@@ -101,11 +101,18 @@ export const insertBlock =
     const { doc, selection } = view.state
     const line = doc.lineAt(selection.main.head)
     const blank = line.text.trim() === ''
+    const before = line.number > 1 ? doc.line(line.number - 1) : null
+    const after = line.number < doc.lines ? doc.line(line.number + 1) : null
     const from = blank ? line.from : line.to
-    const lead = blank ? '' : '\n\n'
+    // A block needs a blank line on each side: right under a paragraph a `---` would turn that
+    // paragraph into a heading, and a table would be swallowed by it.
+    const lead = blank ? (before && before.text.trim() !== '' ? '\n' : '') : '\n\n'
+    const trail = snippet.endsWith('\n') ? (after ? '' : '\n') : after && after.text.trim() !== '' ? '\n' : ''
+    const insert = lead + snippet + trail
+    const length = doc.length - (line.to - from) + insert.length
     view.dispatch({
-      changes: { from, to: line.to, insert: lead + snippet },
-      selection: { anchor: from + lead.length + selFrom, head: from + lead.length + selTo }
+      changes: { from, to: line.to, insert },
+      selection: { anchor: Math.min(from + lead.length + selFrom, length), head: Math.min(from + lead.length + selTo, length) }
     })
   }
 
