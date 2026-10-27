@@ -4,6 +4,9 @@
     "newFile": "新建文件",
     "open": "打开…",
     "openFolder": "打开文件夹…",
+    "openRecent": "打开最近的文件",
+    "noRecent": "没有最近的项目",
+    "clearRecent": "清除菜单",
     "closeFolder": "关闭文件夹",
     "closeTab": "关闭标签页",
     "save": "保存",
@@ -42,6 +45,8 @@
     "exportHtmlBundle": "HTML（打包）"
   },
   "dialog": {
+    "recentMissingFile": "找不到这个文件，它可能已被移动或删除。",
+    "recentMissingFolder": "找不到这个文件夹，它可能已被移动或删除。",
     "token": {
       "title": "重新生成连接 token？",
       "detail": "当前已连接或已配置好的 AI 客户端将失效，需要用新的命令重新配置。",

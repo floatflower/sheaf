@@ -53,6 +53,7 @@ const DISABLED_PLUGINS_KEY = 'sheaf.disabledPlugins'
 // Below this window width the sidebar is tucked away and slides over the editor on demand.
 const NARROW_WIDTH = 900
 const isNarrow = (): boolean => window.innerWidth < NARROW_WIDTH
+const SESSION_KEY = 'sheaf.session'
 const SIDEBAR_KEY = 'sheaf.sidebarWidth'
 const SIDEBAR_MIN = 160
 const SIDEBAR_MAX = 520
@@ -82,6 +83,27 @@ function readDisabledPlugins(): Set<string> {
     return new Set(JSON.parse(readSetting(DISABLED_PLUGINS_KEY) ?? '[]'))
   } catch {
     return new Set()
+  }
+}
+
+/** What is open, so the next launch can pick up where this one left off. Unsaved documents are not part of it. */
+interface Session {
+  folder: string | null
+  files: string[]
+  active: string | null
+}
+
+function readSession(): Session | null {
+  try {
+    const raw = JSON.parse(localStorage.getItem(SESSION_KEY) ?? 'null')
+    if (!raw || !Array.isArray(raw.files)) return null
+    return {
+      folder: typeof raw.folder === 'string' ? raw.folder : null,
+      files: raw.files.filter((f: unknown): f is string => typeof f === 'string'),
+      active: typeof raw.active === 'string' ? raw.active : null
+    }
+  } catch {
+    return null
   }
 }
 
@@ -197,6 +219,7 @@ export default function App(): React.JSX.Element {
   // --- tabs ----------------------------------------------------------------------------------
   /** Open a document in a tab, or switch to the tab that already has it. */
   const openTab = useCallback((path: string | null, name: string, content: string) => {
+    if (path) window.api.addRecent(path, 'file')
     const existing = path ? tabsRef.current.find((t) => t.path === path) : undefined
     if (existing) {
       setActiveId(existing.id)
@@ -231,6 +254,7 @@ export default function App(): React.JSX.Element {
     const saved = await window.api.saveFile(asNew ? null : tab.path, savedText)
     if (!saved) return false
     lastSaved.current.set(saved.path, savedText)
+    window.api.addRecent(saved.path, 'file')
     // Typing may have continued while a save dialog was open: stay dirty if the text moved on.
     setTabs((ts) => ts.map((t) => (t.id === id ? { ...t, path: saved.path, name: saved.name, dirty: t.text !== savedText } : t)))
     setStatus(t('status.saved', { name: saved.name }))
@@ -287,6 +311,7 @@ export default function App(): React.JSX.Element {
   const openWorkspace = useCallback(async (root: string) => {
     try {
       const scan = await window.api.scanFolder(root)
+      window.api.addRecent(root, 'folder')
       setWorkspace(scan)
       setSidebarOpen(true)
       // A small tree opens fully; a large one stays collapsed until the user digs in.
@@ -560,6 +585,59 @@ export default function App(): React.JSX.Element {
       }),
     []
   )
+
+  // --- restoring the previous session -----------------------------------------------------------
+  // Saving waits until the restore has finished, or the blank startup state would overwrite it.
+  const sessionReady = useRef(false)
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const saved = readSession()
+        if (!saved || (!saved.folder && saved.files.length === 0)) return
+        // A folder that is gone ends the restore quietly: the app starts empty.
+        if (saved.folder) {
+          if ((await window.api.pathKind(saved.folder)) !== 'folder') return
+          const scan = await window.api.scanFolder(saved.folder)
+          if (cancelled) return
+          setWorkspace(scan)
+          setSidebarOpen(!isNarrow())
+          setExpanded(new Set(countNodes(scan.tree) <= 40 ? allDirectories(scan.tree) : []))
+        }
+        // A file that is gone is skipped and the rest are still restored.
+        const restored: Tab[] = []
+        for (const path of saved.files) {
+          try {
+            const file = await window.api.readFile(path)
+            restored.push({ id: nextTabId.current++, path: file.path, name: file.name, text: file.content, dirty: false })
+          } catch {
+            /* skip it */
+          }
+        }
+        if (cancelled || restored.length === 0) return
+        setTabs(restored)
+        setActiveId((restored.find((t) => t.path === saved.active) ?? restored[0]).id)
+      } catch {
+        /* Anything unexpected also just means starting empty. */
+      } finally {
+        if (!cancelled) sessionReady.current = true
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const sessionKey = JSON.stringify([workspace?.root ?? null, tabs.flatMap((t) => (t.path ? [t.path] : [])), doc.path])
+  useEffect(() => {
+    if (!sessionReady.current) return
+    const [folder, files, active] = JSON.parse(sessionKey) as [string | null, string[], string | null]
+    try {
+      localStorage.setItem(SESSION_KEY, JSON.stringify({ folder, files, active }))
+    } catch {
+      /* the next launch just starts empty */
+    }
+  }, [sessionKey])
 
   // --- files changed outside the editor ------------------------------------------------------
   const openPaths = tabs.flatMap((t) => (t.path ? [t.path] : [])).join('\n')

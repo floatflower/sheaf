@@ -4,6 +4,9 @@
     "newFile": "New File",
     "open": "Open…",
     "openFolder": "Open Folder…",
+    "openRecent": "Open Recent",
+    "noRecent": "No Recent Items",
+    "clearRecent": "Clear Menu",
     "closeFolder": "Close Folder",
     "closeTab": "Close Tab",
     "save": "Save",
@@ -42,6 +45,8 @@
     "exportHtmlBundle": "HTML (Bundle)"
   },
   "dialog": {
+    "recentMissingFile": "The file could not be found. It may have been moved or deleted.",
+    "recentMissingFolder": "The folder could not be found. It may have been moved or deleted.",
     "token": {
       "title": "Regenerate the connection token?",
       "detail": "AI clients that are connected or already set up will stop working and need to be configured again with the new command.",

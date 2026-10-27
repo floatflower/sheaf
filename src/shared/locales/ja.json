@@ -4,6 +4,9 @@
     "newFile": "新規ファイル",
     "open": "開く…",
     "openFolder": "フォルダを開く…",
+    "openRecent": "最近使った項目を開く",
+    "noRecent": "最近使った項目はありません",
+    "clearRecent": "メニューを消去",
     "closeFolder": "フォルダを閉じる",
     "closeTab": "タブを閉じる",
     "save": "保存",
@@ -42,6 +45,8 @@
     "exportHtmlBundle": "HTML（バンドル）"
   },
   "dialog": {
+    "recentMissingFile": "ファイルが見つかりません。移動または削除された可能性があります。",
+    "recentMissingFolder": "フォルダが見つかりません。移動または削除された可能性があります。",
     "token": {
       "title": "接続トークンを再生成しますか？",
       "detail": "接続中、または設定済みの AI クライアントは使えなくなり、新しいコマンドで設定し直す必要があります。",

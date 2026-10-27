@@ -57,6 +57,8 @@ const api = {
   scanFolder: (root: string): Promise<FolderScan> => ipcRenderer.invoke('folder:scan', root),
   /** Tell the main process which files are open, so it can report when one changes on disk. */
   watchFiles: (paths: string[]) => ipcRenderer.send('files:watch', paths),
+  addRecent: (path: string, kind: 'file' | 'folder') => ipcRenderer.send('recent:add', { path, kind }),
+  pathKind: (path: string): Promise<'file' | 'folder' | null> => ipcRenderer.invoke('path:kind', path),
   stopWatchingFolder: () => ipcRenderer.send('folder:unwatch'),
   readFile: (path: string): Promise<{ path: string; name: string; content: string }> =>
     ipcRenderer.invoke('file:read', path),

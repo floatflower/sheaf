@@ -2,6 +2,8 @@ import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, nativeTheme, shel
 import { join, basename, resolve } from 'path'
 import { buildMenu, type MenuAction, type MenuActions } from './menu'
 import { McpController } from './mcp'
+import { addRecent, clearRecent, loadRecent, recentItems, removeRecent, } from './recent'
+import type { RecentItem } from '../shared/recent'
 import { stopWatchingFiles, watchFiles } from './fileWatch'
 import { scanFolder, stopWatching, watchFolder } from './folder'
 import { loadSettings, newToken, saveSettings, type Settings } from './settings'
@@ -130,6 +132,24 @@ const menuActions: MenuActions = {
   openFolder: async () => {
     const r = await dialog.showOpenDialog({ properties: ['openDirectory'] })
     if (!r.canceled && r.filePaths[0]) sendToRenderer({ type: 'open-workspace', root: r.filePaths[0] })
+  },
+  recent: recentItems,
+  openRecent: async (item) => {
+    if (await stat(item.path).catch(() => null)) return queueOpen(item.path)
+    // Gone since it was last opened: say so, and stop offering it.
+    const win = BrowserWindow.getAllWindows()[0]
+    const options = {
+      type: 'warning' as const,
+      message: t(item.kind === 'folder' ? 'dialog.recentMissingFolder' : 'dialog.recentMissingFile'),
+      detail: item.path
+    }
+    await (win ? dialog.showMessageBox(win, options) : dialog.showMessageBox(options))
+    await removeRecent(item.path)
+    rebuildMenu()
+  },
+  clearRecent: async () => {
+    await clearRecent()
+    rebuildMenu()
   }
 }
 
@@ -178,6 +198,16 @@ function registerIpc(): void {
     watchFolder(root, () => sendToRenderer({ type: 'workspace-changed' }))
     return scanFolder(root)
   })
+  ipcMain.on('recent:add', async (_e, item: RecentItem) => {
+    await addRecent(item)
+    rebuildMenu()
+  })
+  // 'file', 'folder' or null: lets the window check that something it remembers is still there.
+  ipcMain.handle('path:kind', async (_e, path: string) => {
+    const info = await stat(path).catch(() => null)
+    return info ? (info.isDirectory() ? 'folder' : 'file') : null
+  })
+
   ipcMain.on('files:watch', (_e, paths: string[]) => watchFiles(paths, (path) => sendToRenderer({ type: 'file-changed', path })))
   ipcMain.on('folder:unwatch', () => {
     workspaceRoot = null
@@ -405,6 +435,7 @@ if (!app.requestSingleInstanceLock()) {
     await migrateLegacyData()
     app.setAboutPanelOptions({ applicationName: app.name, applicationVersion: app.getVersion() })
     settings = await loadSettings()
+    await loadRecent()
     setMainLanguage(currentLanguage())
     await saveSettings(settings) // persists a freshly generated token so copied client configs stay valid
     mcp = new McpController(() => settings.mcp, callRenderer, () => workspaceRoot)

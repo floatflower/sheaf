@@ -4,6 +4,9 @@
     "newFile": "開新檔案",
     "open": "開啟…",
     "openFolder": "開啟資料夾…",
+    "openRecent": "開啟最近的檔案",
+    "noRecent": "沒有最近的項目",
+    "clearRecent": "清除選單",
     "closeFolder": "關閉資料夾",
     "closeTab": "關閉分頁",
     "save": "儲存",
@@ -42,6 +45,8 @@
     "exportHtmlBundle": "HTML（打包）"
   },
   "dialog": {
+    "recentMissingFile": "找不到這個檔案，它可能已被移動或刪除。",
+    "recentMissingFolder": "找不到這個資料夾，它可能已被移動或刪除。",
     "token": {
       "title": "重新產生連線 token？",
       "detail": "目前已連線或已設定好的 AI 客戶端會失效，需要用新的指令重新設定。",

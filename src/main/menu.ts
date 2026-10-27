@@ -1,5 +1,7 @@
 import { app, BrowserWindow, Menu, type MenuItemConstructorOptions } from 'electron'
+import { homedir } from 'os'
 import { t } from './i18n'
+import type { RecentItem } from '../shared/recent'
 
 export type MenuAction =
   | { type: 'new' | 'open' | 'save' | 'save-as' | 'export-html' | 'export-html-bundle' | 'export-pdf' }
@@ -19,6 +21,15 @@ function send(action: MenuAction): void {
 /** What these menu items do. They run in the main process, so the menu does not message the editor. */
 export interface MenuActions {
   openFolder: () => void
+  recent: () => readonly RecentItem[]
+  openRecent: (item: RecentItem) => void
+  clearRecent: () => void
+}
+
+/** `~` for the home folder, so a long path stays readable in a menu. */
+const shortPath = (path: string): string => {
+  const home = homedir()
+  return path === home || path.startsWith(home + '/') || path.startsWith(home + '\\') ? `~${path.slice(home.length)}` : path
 }
 
 export function buildMenu(actions: MenuActions): Menu {
@@ -30,6 +41,16 @@ export function buildMenu(actions: MenuActions): Menu {
       { label: t('menu.newFile'), accelerator: 'CmdOrCtrl+N', click: () => send({ type: 'new' }) },
       { label: t('menu.open'), accelerator: 'CmdOrCtrl+O', click: () => send({ type: 'open' }) },
       { label: t('menu.openFolder'), accelerator: 'CmdOrCtrl+Shift+O', click: () => actions.openFolder() },
+      {
+        label: t('menu.openRecent'),
+        submenu: [
+          ...(actions.recent().length
+            ? actions.recent().map((item) => ({ label: shortPath(item.path), click: () => actions.openRecent(item) }))
+            : [{ label: t('menu.noRecent'), enabled: false }]),
+          { type: 'separator' },
+          { label: t('menu.clearRecent'), enabled: actions.recent().length > 0, click: () => actions.clearRecent() }
+        ]
+      },
       { label: t('menu.closeFolder'), click: () => send({ type: 'close-workspace' }) },
       { label: t('menu.closeTab'), accelerator: 'CmdOrCtrl+W', click: () => send({ type: 'close-tab' }) },
       { type: 'separator' },
