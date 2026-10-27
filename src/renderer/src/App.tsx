@@ -492,6 +492,18 @@ export default function App(): React.JSX.Element {
         return { name: d.name, path: d.path, dirty: unsaved, pendingReview: live.current.pendingReview, content: textRef.current, ...where }
       }
 
+      case 'tab_status': {
+        const { path } = args as { path: string }
+        const tab = tabsRef.current.find((t) => t.path === path)
+        return { open: !!tab, active: tab?.id === activeIdRef.current, dirty: tab?.dirty ?? false, content: tab ? (tab.id === activeIdRef.current ? textRef.current : tab.text) : '' }
+      }
+
+      case 'open_path': {
+        const { path } = args as { path: string }
+        await openFromTree(path)
+        return { ok: true }
+      }
+
       case 'get_render_errors': {
         await waitForRender()
         const errors = Array.from(document.querySelectorAll<HTMLElement>('.mermaid-error, .chart-error, .katex-error')).map(

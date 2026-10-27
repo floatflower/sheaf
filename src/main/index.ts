@@ -38,6 +38,8 @@ async function listFiles(dir: string, ext: string): Promise<string[]> {
 
 let settings: Settings
 let mcp: McpController
+/** The folder open in the sidebar; the AI file tools are confined to it. */
+let workspaceRoot: string | null = null
 let updater: UpdateController
 
 // The app used to be called "mdeditor", "MEditor" and then "Folio", and Electron keys its data folder on the app
@@ -171,10 +173,14 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('folder:scan', async (_e, root: string) => {
+    workspaceRoot = root
     watchFolder(root, () => sendToRenderer({ type: 'workspace-changed' }))
     return scanFolder(root)
   })
-  ipcMain.on('folder:unwatch', () => stopWatching())
+  ipcMain.on('folder:unwatch', () => {
+    workspaceRoot = null
+    stopWatching()
+  })
 
   ipcMain.handle('file:read', async (_e, path: string) => ({
     path,
@@ -399,7 +405,7 @@ if (!app.requestSingleInstanceLock()) {
     settings = await loadSettings()
     setMainLanguage(currentLanguage())
     await saveSettings(settings) // persists a freshly generated token so copied client configs stay valid
-    mcp = new McpController(() => settings.mcp, callRenderer)
+    mcp = new McpController(() => settings.mcp, callRenderer, () => workspaceRoot)
     updater = new UpdateController(
       () => settings.updates,
       async (patch) => {
