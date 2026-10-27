@@ -117,6 +117,8 @@
   },
   "status": {
     "saved": "已儲存 {{name}}",
+    "changedOnDisk": "「{{name}}」在磁碟上被修改了，但你有尚未儲存的編輯，所以沒有重新載入",
+    "reloadedFromDisk": "已從磁碟重新載入「{{name}}」",
     "exporting": "匯出中…",
     "exported": "已匯出 {{kind}}",
     "exportFailed": "匯出失敗：{{error}}",

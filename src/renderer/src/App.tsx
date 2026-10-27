@@ -230,11 +230,15 @@ export default function App(): React.JSX.Element {
     const savedText = tab.text
     const saved = await window.api.saveFile(asNew ? null : tab.path, savedText)
     if (!saved) return false
+    lastSaved.current.set(saved.path, savedText)
     // Typing may have continued while a save dialog was open: stay dirty if the text moved on.
     setTabs((ts) => ts.map((t) => (t.id === id ? { ...t, path: saved.path, name: saved.name, dirty: t.text !== savedText } : t)))
     setStatus(t('status.saved', { name: saved.name }))
     return true
   }, [t])
+
+  /** What we last wrote to each path, so the change notice for our own save is not taken for an outside edit. */
+  const lastSaved = useRef(new Map<string, string>())
 
   const askSave = useCallback(
     (tab: Tab) =>
@@ -557,6 +561,53 @@ export default function App(): React.JSX.Element {
     []
   )
 
+  // --- files changed outside the editor ------------------------------------------------------
+  const openPaths = tabs.flatMap((t) => (t.path ? [t.path] : [])).join('\n')
+  useEffect(() => {
+    window.api.watchFiles(openPaths ? openPaths.split('\n') : [])
+  }, [openPaths])
+
+  const onFileChanged = useCallback(
+    async (path: string) => {
+      let disk: string
+      try {
+        disk = (await window.api.readFile(path)).content.replace(/\r\n?/g, '\n')
+      } catch {
+        return // deleted or unreadable: leave what is on screen alone
+      }
+      // Read after the await: the tab may have been edited, switched away from or closed meanwhile.
+      const tab = tabsRef.current.find((x) => x.path === path)
+      if (!tab) return
+      const active = tab.id === activeIdRef.current
+      const shown = active ? textRef.current : tab.text
+      if (disk === shown || disk === lastSaved.current.get(path)?.replace(/\r\n?/g, '\n')) return
+      if (tab.dirty) return setStatus(t('status.changedOnDisk', { name: tab.name }))
+
+      lastSaved.current.delete(path)
+      if (active) {
+        // Only the part that differs is replaced, so the cursor and scroll position stay where they were.
+        editor.current?.withView((v) => {
+          const before = v.state.doc.toString()
+          let start = 0
+          while (start < before.length && start < disk.length && before[start] === disk[start]) start++
+          let endBefore = before.length
+          let endDisk = disk.length
+          while (endBefore > start && endDisk > start && before[endBefore - 1] === disk[endDisk - 1]) {
+            endBefore--
+            endDisk--
+          }
+          v.dispatch({ changes: { from: start, to: endBefore, insert: disk.slice(start, endDisk) } })
+        })
+      } else {
+        editor.current?.forget(String(tab.id)) // its remembered editor state still holds the old text
+      }
+      // The editor's change listener marked it dirty; this is the saved text, not an edit.
+      setTabs((ts) => ts.map((x) => (x.id === tab.id ? { ...x, text: disk, dirty: false } : x)))
+      setStatus(t('status.reloadedFromDisk', { name: tab.name }))
+    },
+    [t]
+  )
+
   // The menu listener is registered once; it always calls the latest handlers via this ref.
   const handlers = useRef<(a: MenuAction) => void>(() => {})
   handlers.current = (a) => {
@@ -574,6 +625,7 @@ export default function App(): React.JSX.Element {
       case 'open-workspace': return void openWorkspace(a.root)
       case 'close-workspace': return closeWorkspace()
       case 'workspace-changed': return void refreshWorkspace()
+      case 'file-changed': return void onFileChanged(a.path)
       case 'open-external': return openTab(a.path, a.name, a.content)
     }
   }

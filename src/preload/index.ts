@@ -55,6 +55,8 @@ const api = {
   /** Tell the main process the menu/request listeners are registered, so queued files can be delivered. */
   rendererReady: () => ipcRenderer.send('renderer:ready'),
   scanFolder: (root: string): Promise<FolderScan> => ipcRenderer.invoke('folder:scan', root),
+  /** Tell the main process which files are open, so it can report when one changes on disk. */
+  watchFiles: (paths: string[]) => ipcRenderer.send('files:watch', paths),
   stopWatchingFolder: () => ipcRenderer.send('folder:unwatch'),
   readFile: (path: string): Promise<{ path: string; name: string; content: string }> =>
     ipcRenderer.invoke('file:read', path),

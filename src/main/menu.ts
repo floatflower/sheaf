@@ -10,6 +10,7 @@ export type MenuAction =
   | { type: 'open-workspace'; root: string }
   | { type: 'close-workspace' }
   | { type: 'workspace-changed' }
+  | { type: 'file-changed'; path: string }
 
 function send(action: MenuAction): void {
   BrowserWindow.getFocusedWindow()?.webContents.send('menu:action', action)

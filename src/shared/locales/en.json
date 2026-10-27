@@ -117,6 +117,8 @@
   },
   "status": {
     "saved": "Saved {{name}}",
+    "changedOnDisk": "“{{name}}” changed on disk, but you have unsaved edits here, so it was not reloaded",
+    "reloadedFromDisk": "Reloaded {{name}} from disk",
     "exporting": "Exporting…",
     "exported": "Exported {{kind}}",
     "exportFailed": "Export failed: {{error}}",

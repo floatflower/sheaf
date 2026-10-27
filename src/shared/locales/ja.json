@@ -117,6 +117,8 @@
   },
   "status": {
     "saved": "{{name}} を保存しました",
+    "changedOnDisk": "「{{name}}」がディスク上で変更されましたが、未保存の編集があるため再読み込みしていません",
+    "reloadedFromDisk": "ディスクから「{{name}}」を再読み込みしました",
     "exporting": "書き出し中…",
     "exported": "{{kind}} を書き出しました",
     "exportFailed": "書き出しに失敗しました：{{error}}",

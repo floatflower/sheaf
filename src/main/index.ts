@@ -2,6 +2,7 @@ import { app, BrowserWindow, clipboard, dialog, ipcMain, Menu, nativeTheme, shel
 import { join, basename, resolve } from 'path'
 import { buildMenu, type MenuAction, type MenuActions } from './menu'
 import { McpController } from './mcp'
+import { stopWatchingFiles, watchFiles } from './fileWatch'
 import { scanFolder, stopWatching, watchFolder } from './folder'
 import { loadSettings, newToken, saveSettings, type Settings } from './settings'
 import { isLanguageSetting, resolveLanguage, type Lang } from '../shared/i18n'
@@ -177,6 +178,7 @@ function registerIpc(): void {
     watchFolder(root, () => sendToRenderer({ type: 'workspace-changed' }))
     return scanFolder(root)
   })
+  ipcMain.on('files:watch', (_e, paths: string[]) => watchFiles(paths, (path) => sendToRenderer({ type: 'file-changed', path })))
   ipcMain.on('folder:unwatch', () => {
     workspaceRoot = null
     stopWatching()
@@ -432,6 +434,7 @@ if (!app.requestSingleInstanceLock()) {
 app.on('before-quit', () => {
   updater?.stop()
   stopWatching()
+  stopWatchingFiles()
   void mcp?.stop()
 })
 
