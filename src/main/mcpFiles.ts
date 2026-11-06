@@ -44,10 +44,16 @@ async function existingAncestor(path: string): Promise<string> {
  */
 export async function resolveDocument(root: string, requested: string): Promise<string> {
   const base = await realpath(root)
-  const path = resolve(base, requested)
-  if (!inside(base, path)) fail('路徑必須在目前開啟的資料夾內')
+  // Paths are handed back spelled the way `root` is (that is how the window knows them), but an
+  // absolute one may also arrive spelled with links resolved, such as /private/var for /var.
+  let path = resolve(root, requested)
+  if (!inside(root, path)) {
+    const real = resolve(base, requested)
+    if (!inside(base, real)) fail('路徑必須在目前開啟的資料夾內')
+    path = join(root, relative(base, real))
+  }
   if (!MARKDOWN.test(path)) fail('只能存取 .md 檔')
-  const rel = relative(base, path)
+  const rel = relative(root, path)
   if (rel.split(sep).some((part) => part.startsWith('.'))) fail('不能存取以 . 開頭的檔案或資料夾')
 
   // The file itself if it exists, otherwise the closest folder that does: either way, links are resolved.

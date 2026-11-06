@@ -280,6 +280,26 @@ export default function App(): React.JSX.Element {
     setSavePrompt(null)
   }, [])
 
+  /** Take a tab away without asking; the caller has already dealt with unsaved changes. */
+  const removeTab = useCallback((id: number) => {
+    const all = tabsRef.current
+    const index = all.findIndex((t) => t.id === id)
+    if (index === -1) return
+    const rest = all.filter((t) => t.id !== id)
+    editor.current?.forget(String(id))
+    setReviewCounts(({ [id]: _closed, ...others }) => others)
+
+    if (rest.length === 0) {
+      // Never leave the editor without a document.
+      const blank: Tab = { id: nextTabId.current++, path: null, name: 'untitled.md', text: '', dirty: false }
+      setTabs([blank])
+      setActiveId(blank.id)
+      return
+    }
+    setTabs(rest)
+    if (id === activeIdRef.current) setActiveId(rest[Math.min(index, rest.length - 1)].id)
+  }, [])
+
   const closeTab = useCallback(
     async (id: number) => {
       const tab = tabsRef.current.find((t) => t.id === id)
@@ -289,23 +309,9 @@ export default function App(): React.JSX.Element {
         if (choice === 'cancel') return
         if (choice === 'save' && !(await saveTab(id))) return
       }
-      const all = tabsRef.current
-      const index = all.findIndex((t) => t.id === id)
-      const rest = all.filter((t) => t.id !== id)
-      editor.current?.forget(String(id))
-      setReviewCounts(({ [id]: _closed, ...others }) => others)
-
-      if (rest.length === 0) {
-        // Never leave the editor without a document.
-        const blank: Tab = { id: nextTabId.current++, path: null, name: 'untitled.md', text: '', dirty: false }
-        setTabs([blank])
-        setActiveId(blank.id)
-        return
-      }
-      setTabs(rest)
-      if (id === activeIdRef.current) setActiveId(rest[Math.min(index, rest.length - 1)].id)
+      removeTab(id)
     },
-    [askSave, saveTab]
+    [askSave, saveTab, removeTab]
   )
 
   // --- open-folder mode ----------------------------------------------------------------------
@@ -330,6 +336,54 @@ export default function App(): React.JSX.Element {
       setWorkspace(null) // the folder is gone
     }
   }, [workspace])
+
+  // --- creating, renaming and deleting from the sidebar --------------------------------------
+  const [deleting, setDeleting] = useState<{ path: string; name: string; unsaved: boolean } | null>(null)
+
+  const opError = useCallback(
+    (code: string): string => (['exists', 'invalid', 'missing', 'outside'].includes(code) ? t(`sidebar.error.${code}`) : code),
+    [t]
+  )
+
+  const createInFolder = useCallback(
+    async (dir: string, name: string): Promise<boolean> => {
+      const res = await window.api.createFile(dir, name)
+      if ('error' in res) return setStatus(opError(res.error)), false
+      await refreshWorkspace()
+      openTab(res.ok.path, res.ok.name, '')
+      return true
+    },
+    [opError, openTab, refreshWorkspace]
+  )
+
+  const renameInFolder = useCallback(
+    async (path: string, name: string): Promise<boolean> => {
+      const res = await window.api.renameFile(path, name)
+      if ('error' in res) return setStatus(opError(res.error)), false
+      // An open tab keeps its text and follows the file to its new name.
+      setTabs((ts) => ts.map((x) => (x.path === path ? { ...x, path: res.ok.path, name: res.ok.name } : x)))
+      lastSaved.current.delete(path)
+      await refreshWorkspace()
+      return true
+    },
+    [opError, refreshWorkspace]
+  )
+
+  const askDelete = useCallback((path: string) => {
+    const tab = tabsRef.current.find((x) => x.path === path)
+    setDeleting({ path, name: tab?.name ?? path.split(/[\\/]/).pop() ?? path, unsaved: !!tab?.dirty })
+  }, [])
+
+  const confirmDelete = useCallback(async () => {
+    const target = deleting
+    setDeleting(null)
+    if (!target) return
+    const res = await window.api.trashFile(target.path)
+    if ('error' in res) return setStatus(opError(res.error))
+    const tab = tabsRef.current.find((x) => x.path === target.path)
+    if (tab) removeTab(tab.id)
+    await refreshWorkspace()
+  }, [deleting, opError, removeTab, refreshWorkspace])
 
   const closeWorkspace = useCallback(() => {
     window.api.stopWatchingFolder()
@@ -740,6 +794,9 @@ export default function App(): React.JSX.Element {
                 onOpen={(path) => void openFromTree(path)}
                 onRefresh={() => void refreshWorkspace()}
                 onClose={closeWorkspace}
+                onCreate={createInFolder}
+                onRename={renameInFolder}
+                onDelete={askDelete}
               />
               <div
                 role="separator"
@@ -762,6 +819,9 @@ export default function App(): React.JSX.Element {
                 onOpen={(path) => void openFromTree(path)}
                 onRefresh={() => void refreshWorkspace()}
                 onClose={closeWorkspace}
+                onCreate={createInFolder}
+                onRename={renameInFolder}
+                onDelete={askDelete}
               />
               <button type="button" aria-label={t('sidebar.closeOverlay')} className="min-w-0 flex-1 cursor-default bg-black/30" onClick={() => setSidebarOpen(false)} />
             </div>
@@ -866,6 +926,21 @@ export default function App(): React.JSX.Element {
       )}
 
       <ExportErrorDialog error={exportError} onClose={() => setExportError(null)} onSave={() => void saveExportError()} />
+
+      <AlertDialog open={!!deleting} onOpenChange={(open) => !open && setDeleting(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('sidebar.deleteTitle', { name: deleting?.name })}</AlertDialogTitle>
+            <AlertDialogDescription>{t(deleting?.unsaved ? 'sidebar.deleteUnsaved' : 'sidebar.deleteDescription')}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('sidebar.cancel')}</AlertDialogCancel>
+            <AlertDialogAction className="bg-destructive text-white hover:bg-destructive/90" onClick={() => void confirmDelete()}>
+              {t('sidebar.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={!!missing} onOpenChange={(open) => !open && setMissing(null)}>
         <AlertDialogContent>

@@ -116,7 +116,21 @@
     "empty": "這個資料夾裡沒有 .md 檔案",
     "truncated": "檔案太多，只顯示部分",
     "resize": "調整側欄寬度",
-    "closeOverlay": "關閉側欄"
+    "closeOverlay": "關閉側欄",
+    "newFile": "新增檔案",
+    "fileName": "檔名",
+    "rename": "重新命名",
+    "delete": "刪除",
+    "cancel": "取消",
+    "deleteTitle": "刪除「{{name}}」？",
+    "deleteDescription": "檔案會被移到垃圾桶。",
+    "deleteUnsaved": "檔案會被移到垃圾桶，編輯器中尚未儲存的修改會一併遺失。",
+    "error": {
+      "exists": "已經有同名的檔案",
+      "invalid": "不是有效的檔名",
+      "missing": "檔案已經不存在",
+      "outside": "這個檔案不在目前開啟的資料夾內"
+    }
   },
   "status": {
     "saved": "已儲存 {{name}}",

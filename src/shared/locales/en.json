@@ -116,7 +116,21 @@
     "empty": "No .md files in this folder",
     "truncated": "Too many files, showing only some",
     "resize": "Resize sidebar",
-    "closeOverlay": "Close sidebar"
+    "closeOverlay": "Close sidebar",
+    "newFile": "New file",
+    "fileName": "File name",
+    "rename": "Rename",
+    "delete": "Delete",
+    "cancel": "Cancel",
+    "deleteTitle": "Delete “{{name}}”?",
+    "deleteDescription": "It will be moved to the Trash.",
+    "deleteUnsaved": "It will be moved to the Trash. Your unsaved changes in the editor will be lost.",
+    "error": {
+      "exists": "A file with that name already exists",
+      "invalid": "That is not a valid file name",
+      "missing": "The file no longer exists",
+      "outside": "That file is not in the open folder"
+    }
   },
   "status": {
     "saved": "Saved {{name}}",

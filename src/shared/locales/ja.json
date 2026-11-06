@@ -116,7 +116,21 @@
     "empty": "このフォルダに .md ファイルはありません",
     "truncated": "ファイルが多すぎるため、一部のみ表示しています",
     "resize": "サイドバーの幅を調整",
-    "closeOverlay": "サイドバーを閉じる"
+    "closeOverlay": "サイドバーを閉じる",
+    "newFile": "新規ファイル",
+    "fileName": "ファイル名",
+    "rename": "名前を変更",
+    "delete": "削除",
+    "cancel": "キャンセル",
+    "deleteTitle": "「{{name}}」を削除しますか？",
+    "deleteDescription": "ファイルはゴミ箱に移動されます。",
+    "deleteUnsaved": "ファイルはゴミ箱に移動されます。エディタで未保存の変更は失われます。",
+    "error": {
+      "exists": "同じ名前のファイルがすでにあります",
+      "invalid": "ファイル名として使えません",
+      "missing": "ファイルはすでに存在しません",
+      "outside": "このファイルは開いているフォルダにありません"
+    }
   },
   "status": {
     "saved": "{{name}} を保存しました",

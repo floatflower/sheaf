@@ -4,6 +4,7 @@ import { buildMenu, type MenuAction, type MenuActions } from './menu'
 import { McpController } from './mcp'
 import { addRecent, clearRecent, loadRecent, recentItems, removeRecent, } from './recent'
 import type { RecentItem } from '../shared/recent'
+import { FileOpFailure, createFile, renameFile, trashFile } from './fileOps'
 import { stopWatchingFiles, watchFiles } from './fileWatch'
 import { scanFolder, stopWatching, watchFolder } from './folder'
 import { loadSettings, newToken, saveSettings, type Settings } from './settings'
@@ -192,6 +193,31 @@ function registerIpc(): void {
     watchFolder(root, () => sendToRenderer({ type: 'workspace-changed' }))
     return scanFolder(root)
   })
+  // Sidebar file operations. A refusal comes back as `{ error: code }` so the window can word it.
+  const fileOp = async <T>(work: (root: string) => Promise<T>): Promise<{ ok: T } | { error: string }> => {
+    if (!workspaceRoot) return { error: 'outside' }
+    try {
+      return { ok: await work(workspaceRoot) }
+    } catch (err) {
+      return { error: err instanceof FileOpFailure ? err.code : err instanceof Error ? err.message : String(err) }
+    }
+  }
+  ipcMain.handle('file:create', (_e, dir: string, name: string) => fileOp((root) => createFile(root, dir, name)))
+  ipcMain.handle('file:rename', (_e, path: string, name: string) =>
+    fileOp(async (root) => {
+      const renamed = await renameFile(root, path, name)
+      if (renamed.path !== path) await removeRecent(path)
+      return renamed
+    })
+  )
+  ipcMain.handle('file:trash', (_e, path: string) =>
+    fileOp(async (root) => {
+      await trashFile(root, path)
+      await removeRecent(path)
+      rebuildMenu()
+    })
+  )
+
   ipcMain.on('recent:add', async (_e, item: RecentItem) => {
     await addRecent(item)
     rebuildMenu()
