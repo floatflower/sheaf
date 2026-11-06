@@ -130,7 +130,9 @@
       "invalid": "不是有效的檔名",
       "missing": "檔案已經不存在",
       "outside": "這個檔案不在目前開啟的資料夾內"
-    }
+    },
+    "duplicate": "建立副本",
+    "duplicated": "已建立「{{name}}」"
   },
   "status": {
     "saved": "已儲存 {{name}}",

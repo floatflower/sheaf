@@ -369,6 +369,16 @@ export default function App(): React.JSX.Element {
     [opError, refreshWorkspace]
   )
 
+  const duplicateInFolder = useCallback(
+    async (path: string) => {
+      const res = await window.api.duplicateFile(path)
+      if ('error' in res) return setStatus(opError(res.error))
+      await refreshWorkspace()
+      setStatus(t('sidebar.duplicated', { name: res.ok.name }))
+    },
+    [opError, refreshWorkspace, t]
+  )
+
   const askDelete = useCallback((path: string) => {
     const tab = tabsRef.current.find((x) => x.path === path)
     setDeleting({ path, name: tab?.name ?? path.split(/[\\/]/).pop() ?? path, unsaved: !!tab?.dirty })
@@ -796,6 +806,7 @@ export default function App(): React.JSX.Element {
                 onClose={closeWorkspace}
                 onCreate={createInFolder}
                 onRename={renameInFolder}
+                onDuplicate={(path) => void duplicateInFolder(path)}
                 onDelete={askDelete}
               />
               <div
@@ -821,6 +832,7 @@ export default function App(): React.JSX.Element {
                 onClose={closeWorkspace}
                 onCreate={createInFolder}
                 onRename={renameInFolder}
+                onDuplicate={(path) => void duplicateInFolder(path)}
                 onDelete={askDelete}
               />
               <button type="button" aria-label={t('sidebar.closeOverlay')} className="min-w-0 flex-1 cursor-default bg-black/30" onClick={() => setSidebarOpen(false)} />

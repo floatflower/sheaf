@@ -130,7 +130,9 @@
       "invalid": "That is not a valid file name",
       "missing": "The file no longer exists",
       "outside": "That file is not in the open folder"
-    }
+    },
+    "duplicate": "Duplicate",
+    "duplicated": "Created {{name}}"
   },
   "status": {
     "saved": "Saved {{name}}",

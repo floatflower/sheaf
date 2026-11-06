@@ -4,7 +4,7 @@ import { buildMenu, type MenuAction, type MenuActions } from './menu'
 import { McpController } from './mcp'
 import { addRecent, clearRecent, loadRecent, recentItems, removeRecent, } from './recent'
 import type { RecentItem } from '../shared/recent'
-import { FileOpFailure, createFile, renameFile, trashFile } from './fileOps'
+import { FileOpFailure, createFile, duplicateFile, renameFile, trashFile } from './fileOps'
 import { stopWatchingFiles, watchFiles } from './fileWatch'
 import { scanFolder, stopWatching, watchFolder } from './folder'
 import { loadSettings, newToken, saveSettings, type Settings } from './settings'
@@ -210,6 +210,7 @@ function registerIpc(): void {
       return renamed
     })
   )
+  ipcMain.handle('file:duplicate', (_e, path: string) => fileOp((root) => duplicateFile(root, path)))
   ipcMain.handle('file:trash', (_e, path: string) =>
     fileOp(async (root) => {
       await trashFile(root, path)

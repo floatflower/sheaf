@@ -1,4 +1,5 @@
-import { mkdir, rename, stat, writeFile } from 'fs/promises'
+import { constants } from 'fs'
+import { copyFile, mkdir, rename, stat, writeFile } from 'fs/promises'
 import { basename, dirname, join } from 'path'
 import { shell } from 'electron'
 import { resolveDocument } from './mcpFiles'
@@ -55,6 +56,23 @@ export async function renameFile(root: string, from: string, rawName: string): P
   if (source.toLowerCase() !== target.toLowerCase() && (await exists(target))) throw new FileOpFailure('exists')
   if (source !== target) await rename(source, target)
   return { path: target, name: basename(target) }
+}
+
+/** `Note.md` becomes `Note Copy.md`, then `Note Copy 2.md`, `Note Copy 3.md`… whichever is free. */
+export async function duplicateFile(root: string, from: string): Promise<{ path: string; name: string }> {
+  const source = await inside(root, from)
+  if (!(await exists(source))) throw new FileOpFailure('missing')
+  const stem = basename(source).replace(/\.md$/i, '')
+  for (let n = 1; ; n++) {
+    const name = `${stem} Copy${n === 1 ? '' : ` ${n}`}.md`
+    const target = join(dirname(source), name)
+    try {
+      await copyFile(source, target, constants.COPYFILE_EXCL) // never replaces a file that is already there
+      return { path: target, name }
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err
+    }
+  }
 }
 
 /** Moves to the Trash / Recycle Bin rather than deleting for good. */

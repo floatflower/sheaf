@@ -130,7 +130,9 @@
       "invalid": "不是有效的文件名",
       "missing": "文件已经不存在",
       "outside": "这个文件不在当前打开的文件夹内"
-    }
+    },
+    "duplicate": "创建副本",
+    "duplicated": "已创建“{{name}}”"
   },
   "status": {
     "saved": "已保存 {{name}}",

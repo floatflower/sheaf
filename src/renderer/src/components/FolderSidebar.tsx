@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronRight, FilePlus, FileText, Folder, FolderOpen, Pencil, RefreshCw, Trash2, X } from 'lucide-react'
+import { ChevronRight, Copy, FilePlus, FileText, Folder, FolderOpen, Pencil, RefreshCw, Trash2, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { FolderScan, TreeNode } from '../../../main/folder'
 import { Button } from '@/components/ui/button'
@@ -19,13 +19,14 @@ interface Props {
   /** Each resolves true when it worked; on false the name stays editable (the window explains why). */
   onCreate: (dir: string, name: string) => Promise<boolean>
   onRename: (path: string, name: string) => Promise<boolean>
+  onDuplicate: (path: string) => void
   onDelete: (path: string) => void
 }
 
 /** What is being named right now: an existing file, or a new one waiting to be created. */
 type Editing = { kind: 'rename'; path: string } | { kind: 'create' } | null
 
-interface RowProps extends Pick<Props, 'currentPath' | 'expanded' | 'onToggle' | 'onOpen' | 'onDelete'> {
+interface RowProps extends Pick<Props, 'currentPath' | 'expanded' | 'onToggle' | 'onOpen' | 'onDuplicate' | 'onDelete'> {
   node: TreeNode
   depth: number
   editing: Editing
@@ -89,7 +90,7 @@ function NameInput({ initial, depth, onSubmit, onCancel }: NameInputProps): Reac
   )
 }
 
-function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDelete, editing, onStartRename, onSubmitRename, onCancelEdit }: RowProps): React.JSX.Element {
+function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate, onDelete, editing, onStartRename, onSubmitRename, onCancelEdit }: RowProps): React.JSX.Element {
   const { t } = useTranslation()
   const open = expanded.has(node.path)
   const selected = !node.dir && node.path === currentPath
@@ -138,6 +139,10 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDelete, e
               <Pencil />
               {t('sidebar.rename')}
             </ContextMenuItem>
+            <ContextMenuItem onSelect={() => onDuplicate(node.path)}>
+              <Copy />
+              {t('sidebar.duplicate')}
+            </ContextMenuItem>
             <ContextMenuItem variant="destructive" onSelect={() => onDelete(node.path)}>
               <Trash2 />
               {t('sidebar.delete')}
@@ -156,6 +161,7 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDelete, e
               expanded={expanded}
               onToggle={onToggle}
               onOpen={onOpen}
+              onDuplicate={onDuplicate}
               onDelete={onDelete}
               editing={editing}
               onStartRename={onStartRename}
@@ -169,7 +175,7 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDelete, e
   )
 }
 
-export default function FolderSidebar({ width, className, scan, currentPath, expanded, onToggle, onOpen, onRefresh, onClose, onCreate, onRename, onDelete }: Props): React.JSX.Element {
+export default function FolderSidebar({ width, className, scan, currentPath, expanded, onToggle, onOpen, onRefresh, onClose, onCreate, onRename, onDuplicate, onDelete }: Props): React.JSX.Element {
   const { t } = useTranslation()
   const [editing, setEditing] = useState<Editing>(null)
   const stopEditing = (): void => setEditing(null)
@@ -223,6 +229,7 @@ export default function FolderSidebar({ width, className, scan, currentPath, exp
                 expanded={expanded}
                 onToggle={onToggle}
                 onOpen={onOpen}
+                onDuplicate={onDuplicate}
                 onDelete={onDelete}
                 editing={editing}
                 onStartRename={(path) => setEditing({ kind: 'rename', path })}
