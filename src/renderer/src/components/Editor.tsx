@@ -1,5 +1,18 @@
 import { useEffect, useImperativeHandle, useRef } from 'react'
-import { EditorView, basicSetup } from 'codemirror'
+import { EditorView } from 'codemirror'
+import {
+  crosshairCursor,
+  drawSelection,
+  dropCursor,
+  highlightActiveLine,
+  highlightActiveLineGutter,
+  highlightSpecialChars,
+  lineNumbers,
+  rectangularSelection
+} from '@codemirror/view'
+import { bracketMatching, defaultHighlightStyle, foldGutter, foldKeymap, indentOnInput, syntaxHighlighting } from '@codemirror/language'
+import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
+import { highlightSelectionMatches, searchKeymap } from '@codemirror/search'
 import { EditorState, type ChangeSpec, type Extension } from '@codemirror/state'
 import { keymap } from '@codemirror/view'
 import { indentWithTab } from '@codemirror/commands'
@@ -7,6 +20,29 @@ import { wrap, type EditorCommand } from '@/lib/editorCommands'
 import { acceptAll, countChanges, dispatchReviewed, goToChange, rejectAll, reviewExtension, reviewField } from '@/lib/review'
 import { markdown } from '@codemirror/lang-markdown'
 import { languages } from '@codemirror/language-data'
+
+/*
+ * CodeMirror's basicSetup minus the code helpers: no completion popup and no auto-closing
+ * brackets or quotes, which get in the way when writing prose.
+ */
+const writingSetup: Extension[] = [
+  lineNumbers(),
+  highlightActiveLineGutter(),
+  highlightSpecialChars(),
+  history(),
+  foldGutter(),
+  drawSelection(),
+  dropCursor(),
+  EditorState.allowMultipleSelections.of(true),
+  indentOnInput(),
+  syntaxHighlighting(defaultHighlightStyle, { fallback: true }),
+  bracketMatching(),
+  rectangularSelection(),
+  crosshairCursor(),
+  highlightActiveLine(),
+  highlightSelectionMatches(),
+  keymap.of([...defaultKeymap, ...searchKeymap, ...historyKeymap, ...foldKeymap])
+]
 
 export interface EditorHandle {
   /** Run a toolbar command against the editor and give focus back to it. */
@@ -75,9 +111,9 @@ export default function Editor({ ref, value, docKey, onChange, onReview }: Props
         { key: 'Mod-i', run: (v) => (wrap('*')(v), true) },
         indentWithTab
       ]),
-      basicSetup,
+      writingSetup,
       reviewExtension,
-      markdown({ codeLanguages: languages }),
+      markdown({ codeLanguages: languages, completeHTMLTags: false }),
       EditorView.lineWrapping,
       EditorView.theme({
         '&': { height: '100%', fontSize: '14px' },
