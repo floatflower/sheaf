@@ -145,7 +145,7 @@
     "openFileFailed": "{{path}} を開けません：{{error}}",
     "pluginErrors": "プラグインのエラー：{{list}}",
     "listSeparator": "；",
-    "characters": "{{n}} 文字",
+    "characters": "{{n}}文字",
     "version": "バージョン {{version}}",
     "devBuild": "開発ビルド"
   },

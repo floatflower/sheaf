@@ -145,7 +145,7 @@
     "openFileFailed": "Could not open {{path}}: {{error}}",
     "pluginErrors": "Plugin errors: {{list}}",
     "listSeparator": "; ",
-    "characters": "{{n}} characters",
+    "characters": "{{n}} chars",
     "version": "Version {{version}}",
     "devBuild": "development build"
   },

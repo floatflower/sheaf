@@ -128,7 +128,7 @@ const allDirectories = (tree: TreeNode[]): string[] =>
   tree.flatMap((node) => (node.dir ? [node.path, ...allDirectories(node.children ?? [])] : []))
 
 export default function App(): React.JSX.Element {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const [languageSetting, setLanguageSetting] = useState<LanguageSetting>('system')
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [update, setUpdate] = useState<UpdateState | null>(null)
@@ -363,6 +363,24 @@ export default function App(): React.JSX.Element {
       // An open tab keeps its text and follows the file to its new name.
       setTabs((ts) => ts.map((x) => (x.path === path ? { ...x, path: res.ok.path, name: res.ok.name } : x)))
       lastSaved.current.delete(path)
+      await refreshWorkspace()
+      return true
+    },
+    [opError, refreshWorkspace]
+  )
+
+  const moveInFolder = useCallback(
+    async (path: string, toDir: string): Promise<boolean> => {
+      const res = await window.api.moveEntry(path, toDir)
+      if ('error' in res) return setStatus(opError(res.error)), false
+      const { path: next, dir } = res.ok
+      if (next === path) return true
+      // Open tabs follow what moved: the file itself, or everything under a moved folder.
+      const sep = path.includes('\\') ? '\\' : '/'
+      const follow = (p: string): string => (p === path ? next : p.startsWith(path + sep) ? next + p.slice(path.length) : p)
+      setTabs((ts) => ts.map((x) => (x.path && follow(x.path) !== x.path ? { ...x, path: follow(x.path) } : x)))
+      for (const key of [...lastSaved.current.keys()]) if (follow(key) !== key) lastSaved.current.delete(key)
+      setExpanded((prev) => new Set([...[...prev].map(follow), toDir, ...(dir ? [next] : [])]))
       await refreshWorkspace()
       return true
     },
@@ -808,6 +826,7 @@ export default function App(): React.JSX.Element {
                 onRename={renameInFolder}
                 onDuplicate={(path) => void duplicateInFolder(path)}
                 onDelete={askDelete}
+                onMove={moveInFolder}
               />
               <div
                 role="separator"
@@ -834,6 +853,7 @@ export default function App(): React.JSX.Element {
                 onRename={renameInFolder}
                 onDuplicate={(path) => void duplicateInFolder(path)}
                 onDelete={askDelete}
+                onMove={moveInFolder}
               />
               <button type="button" aria-label={t('sidebar.closeOverlay')} className="min-w-0 flex-1 cursor-default bg-black/30" onClick={() => setSidebarOpen(false)} />
             </div>
@@ -892,17 +912,17 @@ export default function App(): React.JSX.Element {
         </div>
 
         <footer className="flex items-center gap-3 border-t px-3 py-1 text-xs text-muted-foreground">
-          <span className="min-w-0 flex-1 truncate">{status || t('status.characters', { n: text.length })}</span>
-          {appInfo && (
-            // The version is whatever the build stamped in: for a release, the git tag (v0.0.2-rc1 → "v0.0.2-rc1").
-            <span
-              className="shrink-0 select-text"
-              title={appInfo.packaged ? t('status.version', { version: appInfo.version }) : `${t('status.version', { version: appInfo.version })} (${t('status.devBuild')})`}
-            >
-              v{appInfo.version}
-              {!appInfo.packaged && ' · dev'}
-            </span>
-          )}
+          <span className="min-w-0 flex-1 truncate">{status}</span>
+          <span className="shrink-0 select-text">
+            {t('status.characters', { n: text.replace(/\s/g, '').length.toLocaleString(i18n.language) })}
+            {appInfo && (
+              // The version is whatever the build stamped in: for a release, the git tag (v0.0.2-rc1 → "v0.0.2-rc1").
+              <span title={appInfo.packaged ? t('status.version', { version: appInfo.version }) : `${t('status.version', { version: appInfo.version })} (${t('status.devBuild')})`}>
+                {' · '}v{appInfo.version}
+                {!appInfo.packaged && ' · dev'}
+              </span>
+            )}
+          </span>
         </footer>
       </div>
 

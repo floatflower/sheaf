@@ -145,7 +145,7 @@
     "openFileFailed": "无法打开 {{path}}：{{error}}",
     "pluginErrors": "插件错误：{{list}}",
     "listSeparator": "；",
-    "characters": "{{n}} 个字符",
+    "characters": "{{n}}字",
     "version": "版本 {{version}}",
     "devBuild": "开发版"
   },

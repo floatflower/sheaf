@@ -21,14 +21,35 @@ interface Props {
   onRename: (path: string, name: string) => Promise<boolean>
   onDuplicate: (path: string) => void
   onDelete: (path: string) => void
+  /** Move a file or folder into a folder; resolves true when it moved. */
+  onMove: (path: string, toDir: string) => Promise<boolean>
 }
 
 /** What is being named right now: an existing file, or a new one waiting to be created. */
 type Editing = { kind: 'rename'; path: string } | { kind: 'create' } | null
 
+/** Drag and drop within the tree: what is being dragged, and the folder it would land in. */
+interface Dnd {
+  dropOn: string | null
+  setDropOn: (dir: string | null) => void
+  drop: (dir: string) => void
+}
+
+/** The path being dragged. The data of a drag cannot be read until it is dropped, so it is kept here. */
+let dragged: string | null = null
+
+/** Whether `dir` is where `path` already is, or is `path` itself or inside it. */
+function pointless(path: string, dir: string): boolean {
+  const sep = path.includes('\\') ? '\\' : '/'
+  return dir === path || dir.startsWith(path + sep) || path.slice(0, path.lastIndexOf(sep)) === dir
+}
+
 interface RowProps extends Pick<Props, 'currentPath' | 'expanded' | 'onToggle' | 'onOpen' | 'onDuplicate' | 'onDelete'> {
   node: TreeNode
   depth: number
+  /** The folder this row sits in. */
+  parent: string
+  dnd: Dnd
   editing: Editing
   onStartRename: (path: string) => void
   onSubmitRename: (path: string, name: string) => Promise<boolean>
@@ -90,7 +111,7 @@ function NameInput({ initial, depth, onSubmit, onCancel }: NameInputProps): Reac
   )
 }
 
-function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate, onDelete, editing, onStartRename, onSubmitRename, onCancelEdit }: RowProps): React.JSX.Element {
+function Row({ node, depth, parent, dnd, currentPath, expanded, onToggle, onOpen, onDuplicate, onDelete, editing, onStartRename, onSubmitRename, onCancelEdit }: RowProps): React.JSX.Element {
   const { t } = useTranslation()
   const open = expanded.has(node.path)
   const selected = !node.dir && node.path === currentPath
@@ -104,9 +125,34 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate
     )
   }
 
+  // A folder takes what is dropped on it; a file passes it on to the folder it is in.
+  const target = node.dir ? node.path : parent
   const button = (
       <button
         type="button"
+        draggable
+        onDragStart={(e) => {
+          dragged = node.path
+          e.dataTransfer.effectAllowed = 'move'
+          e.dataTransfer.setData('text/plain', node.name)
+        }}
+        onDragEnd={() => {
+          dragged = null
+          dnd.setDropOn(null)
+        }}
+        onDragOver={(e) => {
+          if (!dragged || pointless(dragged, target)) return
+          e.preventDefault()
+          e.stopPropagation()
+          e.dataTransfer.dropEffect = 'move'
+          dnd.setDropOn(target)
+        }}
+        onDrop={(e) => {
+          if (!dragged || pointless(dragged, target)) return
+          e.preventDefault()
+          e.stopPropagation()
+          dnd.drop(target)
+        }}
         title={node.path}
         aria-expanded={node.dir ? open : undefined}
         aria-current={selected ? 'true' : undefined}
@@ -115,7 +161,8 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate
         className={cn(
           'flex w-full cursor-pointer items-center gap-1.5 rounded-sm py-1 pr-2 text-left text-sm outline-none',
           'hover:bg-accent focus-visible:ring-1 focus-visible:ring-ring',
-          selected && 'bg-accent font-medium text-accent-foreground'
+          selected && 'bg-accent font-medium text-accent-foreground',
+          node.dir && dnd.dropOn === node.path && 'bg-accent ring-1 ring-ring'
         )}
       >
         {/* Files get an empty slot so their names line up with sibling folders. */}
@@ -157,6 +204,8 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate
               key={child.path}
               node={child}
               depth={depth + 1}
+              parent={node.path}
+              dnd={dnd}
               currentPath={currentPath}
               expanded={expanded}
               onToggle={onToggle}
@@ -175,10 +224,21 @@ function Row({ node, depth, currentPath, expanded, onToggle, onOpen, onDuplicate
   )
 }
 
-export default function FolderSidebar({ width, className, scan, currentPath, expanded, onToggle, onOpen, onRefresh, onClose, onCreate, onRename, onDuplicate, onDelete }: Props): React.JSX.Element {
+export default function FolderSidebar({ width, className, scan, currentPath, expanded, onToggle, onOpen, onRefresh, onClose, onCreate, onRename, onDuplicate, onDelete, onMove }: Props): React.JSX.Element {
   const { t } = useTranslation()
   const [editing, setEditing] = useState<Editing>(null)
   const stopEditing = (): void => setEditing(null)
+  const [dropOn, setDropOn] = useState<string | null>(null)
+  const dnd: Dnd = {
+    dropOn,
+    setDropOn,
+    drop: (dir) => {
+      const path = dragged
+      dragged = null
+      setDropOn(null)
+      if (path) void onMove(path, dir)
+    }
+  }
   const submitRename = async (path: string, name: string): Promise<boolean> => {
     const ok = await onRename(path, name)
     if (ok) stopEditing()
@@ -201,7 +261,23 @@ export default function FolderSidebar({ width, className, scan, currentPath, exp
         </Button>
       </div>
 
-      <nav className="min-h-0 flex-1 overflow-auto p-1">
+      <nav
+        className={cn('min-h-0 flex-1 overflow-auto p-1', dropOn === scan.root && 'bg-accent/40')}
+        onDragOver={(e) => {
+          if (!dragged || pointless(dragged, scan.root)) return
+          e.preventDefault()
+          e.dataTransfer.dropEffect = 'move'
+          setDropOn(scan.root)
+        }}
+        onDragLeave={(e) => {
+          if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropOn(null)
+        }}
+        onDrop={(e) => {
+          if (!dragged || pointless(dragged, scan.root)) return
+          e.preventDefault()
+          dnd.drop(scan.root)
+        }}
+      >
         {scan.tree.length === 0 && editing?.kind !== 'create' ? (
           <p className="px-3 py-4 text-sm text-muted-foreground">{t('sidebar.empty')}</p>
         ) : (
@@ -225,6 +301,8 @@ export default function FolderSidebar({ width, className, scan, currentPath, exp
                 key={node.path}
                 node={node}
                 depth={0}
+                parent={scan.root}
+                dnd={dnd}
                 currentPath={currentPath}
                 expanded={expanded}
                 onToggle={onToggle}

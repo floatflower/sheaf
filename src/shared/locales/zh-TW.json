@@ -145,7 +145,7 @@
     "openFileFailed": "無法開啟 {{path}}：{{error}}",
     "pluginErrors": "Plugin 錯誤：{{list}}",
     "listSeparator": "；",
-    "characters": "{{n}} 字元",
+    "characters": "{{n}}字",
     "version": "版本 {{version}}",
     "devBuild": "開發版"
   },

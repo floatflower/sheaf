@@ -1,6 +1,6 @@
 import { constants } from 'fs'
 import { copyFile, mkdir, rename, stat, writeFile } from 'fs/promises'
-import { basename, dirname, join } from 'path'
+import { basename, dirname, join, relative, isAbsolute } from 'path'
 import { shell } from 'electron'
 import { resolveDocument } from './mcpFiles'
 
@@ -73,6 +73,26 @@ export async function duplicateFile(root: string, from: string): Promise<{ path:
       if ((err as NodeJS.ErrnoException).code !== 'EEXIST') throw err
     }
   }
+}
+
+/**
+ * Move a file or folder into another folder of the workspace. Never replaces anything, and a
+ * folder cannot go into itself. Folders are checked through a stand-in file name, because the
+ * path rules are written for Markdown files.
+ */
+export async function moveEntry(root: string, from: string, toDir: string): Promise<{ path: string; name: string; dir: boolean }> {
+  const isDir = (await stat(from).catch(() => null))?.isDirectory() ?? false
+  const source = isDir ? dirname(await inside(root, join(from, 'x.md'))) : await inside(root, from)
+  const dest = dirname(await inside(root, join(toDir, 'x.md')))
+  if (!(await exists(source))) throw new FileOpFailure('missing')
+  const name = basename(source)
+  const target = join(dest, name)
+  if (target === source) return { path: source, name, dir: isDir }
+  const rel = relative(source, dest)
+  if (isDir && (rel === '' || (!rel.startsWith('..') && !isAbsolute(rel)))) throw new FileOpFailure('invalid')
+  if (await exists(target)) throw new FileOpFailure('exists')
+  await rename(source, target)
+  return { path: target, name, dir: isDir }
 }
 
 /** Moves to the Trash / Recycle Bin rather than deleting for good. */

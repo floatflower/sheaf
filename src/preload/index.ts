@@ -61,6 +61,8 @@ const api = {
     ipcRenderer.invoke('file:create', dir, name) as Promise<{ ok: { path: string; name: string } } | { error: string }>,
   renameFile: (path: string, name: string) =>
     ipcRenderer.invoke('file:rename', path, name) as Promise<{ ok: { path: string; name: string } } | { error: string }>,
+  moveEntry: (path: string, toDir: string) =>
+    ipcRenderer.invoke('file:move', path, toDir) as Promise<{ ok: { path: string; name: string; dir: boolean } } | { error: string }>,
   duplicateFile: (path: string) => ipcRenderer.invoke('file:duplicate', path) as Promise<{ ok: { path: string; name: string } } | { error: string }>,
   trashFile: (path: string) => ipcRenderer.invoke('file:trash', path) as Promise<{ ok: undefined } | { error: string }>,
   addRecent: (path: string, kind: 'file' | 'folder') => ipcRenderer.send('recent:add', { path, kind }),
